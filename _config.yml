@@ -16,7 +16,7 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Aleksandar Skrbic"
+#title                    : "Aleksandar Skrbic"
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
 name                     : "Aleksandar Skrbic"
@@ -94,13 +94,12 @@ analytics:
 # Site Author
 author:
   name             : "Aleksandar Skrbic"
-  #avatar           : "/images/s.png"
   bio              : "Software Engineer interested in distributed and data-intensive systems"
   location         : "Novi Sad, Serbia"
   email            : "skrbic.alexa@gmail.com"
   links:
     - label: "Linkedin"
-      icon: "fa fa-linkedin"
+      icon: "fab fa-fw fa-linkedin"
       url: "https://www.linkedin.com/in/aleksandar-skrbic/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
@@ -110,7 +109,7 @@ author:
 footer:
   links:
     - label: "Linkedin"
-      icon: "fa fa-linkedin"
+      icon: "fab fa-fw fa-linkedin"
       url: "https://www.linkedin.com/in/aleksandar-skrbic/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
