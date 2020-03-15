@@ -94,7 +94,7 @@ analytics:
 # Site Author
 author:
   name             : "Aleksandar Skrbic"
-  avatar           : "/images/s.JPG"
+  avatar           : "/images/s.png"
   bio              : "Software Engineer interested in distributed and data-intensive systems"
   location         : "Novi Sad, Serbia"
   email            : "skrbic.alexa@gmail.com"
