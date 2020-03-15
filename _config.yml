@@ -99,11 +99,8 @@ author:
   location         : "Novi Sad, Serbia"
   email            : "skrbic.alexa@gmail.com"
   links:
-    - label: "Email"
-      icon: "fas fa-fw fa-envelope-square"
-      url: mailto:skrbic.alexa@gmail.com
     - label: "Linkedin"
-      icon: "fas fa-fw fa-link"
+      icon: "fa fa-linkedin-square"
       url: "https://www.linkedin.com/in/aleksandar-skrbic/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
@@ -112,11 +109,8 @@ author:
 # Site Footer
 footer:
   links:
-    - label: "Email"
-      icon: "fas fa-fw fa-envelope-square"
-      url: mailto:skrbic.alexa@gmail.com
     - label: "Linkedin"
-      icon: "fas fa-fw fa-link"
+      icon: "fa fa-linkedin-square"
       url: "https://www.linkedin.com/in/aleksandar-skrbic/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
