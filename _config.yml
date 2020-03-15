@@ -94,13 +94,13 @@ analytics:
 # Site Author
 author:
   name             : "Aleksandar Skrbic"
-  avatar           : "/images/s.png"
+  #avatar           : "/images/s.png"
   bio              : "Software Engineer interested in distributed and data-intensive systems"
   location         : "Novi Sad, Serbia"
   email            : "skrbic.alexa@gmail.com"
   links:
     - label: "Linkedin"
-      icon: "fa fa-linkedin-square"
+      icon: "fa fa-linkedin"
       url: "https://www.linkedin.com/in/aleksandar-skrbic/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
@@ -110,7 +110,7 @@ author:
 footer:
   links:
     - label: "Linkedin"
-      icon: "fa fa-linkedin-square"
+      icon: "fa fa-linkedin"
       url: "https://www.linkedin.com/in/aleksandar-skrbic/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
