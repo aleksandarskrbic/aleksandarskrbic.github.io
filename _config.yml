@@ -16,7 +16,7 @@ minimal_mistakes_skin    : "default" # "air", "aqua", "contrast", "dark", "dirt"
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Home"
+title                    : "Aleksandar Skrbic"
 title_separator          : "-"
 subtitle                 : # site tagline that appears below site title in masthead
 name                     : "Aleksandar Skrbic"
@@ -93,7 +93,7 @@ analytics:
 # Site Author
 author:
   name             : "Aleksandar Skrbic"
-  bio              : "Software Engineer interested in distributed and data-intensive systems"
+  bio              : "Software Engineer interested in distributed and data-intensive systems."
   location         : "Novi Sad, Serbia"
   email            : "skrbic.alexa@gmail.com"
   links:
@@ -242,7 +242,6 @@ compress_html:
   ignore:
     envs: development
 
-
 # Defaults
 defaults:
   # _posts
@@ -256,3 +255,11 @@ defaults:
       comments: # true
       share: true
       related: true
+
+  # _pages
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: single
+      author_profile: true
