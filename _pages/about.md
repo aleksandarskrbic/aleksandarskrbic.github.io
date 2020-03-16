@@ -1,6 +1,6 @@
 ---
 title: "About"
-layout: single
+layout: achive
 permalink: /about/
 header:
     image: "/images/header.png"

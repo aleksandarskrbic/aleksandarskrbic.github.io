@@ -1,7 +1,7 @@
 ---
 layout: achive
-permalink: /posts/
-title: "Posts"
+permalink: /articles/
+title: "Articles"
 author_prfile: true
 header:
     image: "/images/header.png"
