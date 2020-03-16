@@ -1,9 +1,8 @@
 ---
 title: "About"
-layout: achive
 permalink: /about/
 header:
-    image: "/images/header.png"
+  image: "/images/header.jpg"
 ---
 
 Software Engineer with primarily focuses on distributed and data-intensive systems who started career as a Data Scientist,
