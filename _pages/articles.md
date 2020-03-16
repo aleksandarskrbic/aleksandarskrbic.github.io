@@ -4,7 +4,7 @@ permalink: /articles/
 title: "Articles"
 author_prfile: true
 header:
-    image: "/images/header.png"
+    image: "/images/header.jpg"
 ---
 
 {% include base_path %}
