@@ -1,6 +1,6 @@
 ---
 title: "Data processing with Akka Actors: Part I"
-date: 2020-03-16
+date: 2020-04-04
 header:
   image: "/images/akka/akka-h1.jpg"
 tags: [scala, akka, jvm, big data]
