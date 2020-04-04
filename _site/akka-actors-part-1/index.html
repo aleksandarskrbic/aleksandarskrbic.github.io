@@ -1,0 +1,609 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.9.0 by Michael Rose
+  Copyright 2013-2018 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE.txt
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Data processing with Akka Actors: Part I - Aleksandar Skrbic</title>
+<meta name="description" content="Scala, Akka, JVM, Big Data">
+
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Aleksandar Skrbic">
+<meta property="og:title" content="Data processing with Akka Actors: Part I">
+<meta property="og:url" content="http://localhost:4000/akka-actors-part-1/">
+
+
+  <meta property="og:description" content="Scala, Akka, JVM, Big Data">
+
+
+
+  <meta property="og:image" content="http://localhost:4000/images/akka/akka-h1.jpg">
+
+
+
+
+
+  <meta property="article:published_time" content="2020-03-16T00:00:00+01:00">
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://localhost:4000/akka-actors-part-1/">
+
+
+
+
+
+
+
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "Person",
+      "name": "Aleksandar Skrbic",
+      "url": "http://localhost:4000",
+      "sameAs": null
+    }
+  </script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="http://localhost:4000/feed.xml" type="application/atom+xml" rel="alternate" title="Aleksandar Skrbic Feed">
+
+<!-- http://t.co/dKP3o1e -->
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="http://localhost:4000/assets/css/main.css">
+
+<!--[if lte IE 9]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use http://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+  </head>
+
+  <body class="layout--single">
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    <div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        <a class="site-title" href="http://localhost:4000/">Aleksandar Skrbic</a>
+        <ul class="visible-links">
+          
+            
+            <li class="masthead__menu-item">
+              <a href="http://localhost:4000/about/" >About</a>
+            </li>
+          
+        </ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle Menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+    <div class="initial-content">
+      
+  
+
+
+
+
+
+
+
+
+
+
+
+<div class="page__hero"
+  style=" "
+>
+  
+    <img src="http://localhost:4000/images/akka/akka-h1.jpg" alt="Data processing with Akka Actors: Part I" class="page__hero-image">
+  
+  
+</div>
+
+
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="http://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Aleksandar Skrbic</h3>
+    
+    
+      <p class="author__bio" itemprop="description">
+        Software Engineer interested in distributed and data-intensive systems.
+      </p>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="http://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Novi Sad, Serbia</span>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="mailto:skrbic.alexa@gmail.com">
+            <meta itemprop="email" content="skrbic.alexa@gmail.com" />
+            <i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i> Email
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/skrbic_a" itemprop="sameAs">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i> Twitter
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/aleksandar-skrbic" itemprop="sameAs">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i> LinkedIn
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/aleksandarskrbic" itemprop="sameAs">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+  <article class="page" itemscope itemtype="http://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Data processing with Akka Actors: Part I">
+    <meta itemprop="description" content="Scala, Akka, JVM, Big Data">
+    <meta itemprop="datePublished" content="March 16, 2020">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 class="page__title" itemprop="headline">Data processing with Akka Actors: Part I
+</h1>
+          
+            <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  5 minute read
+</p>
+          
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+        
+<p>Everyone experienced in a field of distributed and data-intensive systems or big data technologies,
+in general, must have heard about <a href="https://akka.io/">Akka</a>.
+This article will be part of the series, where I will try to introduce you to the actor programming model while developing a data processing application exploiting techniques provided by <em>Akka Actors library</em> to build concurrent and parallel systems. This series will skip <em>“Scala and Akka Basics”</em> parts because official documentation is great and you can build a good foundation of Akka by reading it.  The goal of this series is to provide a hands-on introduction to the Akka toolkit.</p>
+
+<p>So, let’s talk about the implementation details. As you guessed Scala is going to be used with Akka instead of Java and I think there is no need for the explanation.
+An application that is going to be developed will be reading logs from the file system and count the number of occurrences of HTTP status codes in a given file. All data processing tasks will be executed in parallel.
+In the actor programming model, the base unit is an actor obviously, and actors communicate with each other in an asynchronous manner, by sending and receiving messages.</p>
+
+<p>Since our application will be actor based let’s take a look at the actor hierarchy.</p>
+
+<p><img src="http://localhost:4000/images/akka/actor-hierarchy.jpg" /></p>
+
+<p>You can see that there are four actor types, <em>Supervisor, Ingestion, Master, and Worker</em>. Names are more or less self-explanatory, but let’s make things clear. Good practice in actor-based programming is to organize actors in a tree-like structure. So the root actor in our application will be
+<em>Supervisor Actor</em> who will be an entry point in our system.</p>
+
+<ul>
+  <li><em>Supervisor Actor</em> is responsible for spawning and managing <em>Ingestion Actor</em>.</li>
+  <li><em>Ingestion Actor</em>  will be parent of <em>Master Actor</em>.</li>
+  <li>Also, you can notice that we are going to have multiple <em>Worker Actors</em>, who are going to do all the heavy lifting, but <em>Master Actor</em> is responsible for their coordination.</li>
+</ul>
+
+<p>To give you more details about the problem that we are going to solve using Akka let me walk you through the whole data processing flow.</p>
+<ul>
+  <li>Dataset of weblogs that we are going to process can be downloaded from <a href="https://www.kaggle.com/shawon10/web-log-dataset">kaggle</a>.</li>
+  <li>It’s csv file that contains <em>IP, Time, URL, Status</em> on every line, but not every line is in a valid form, so we will have to deal with that.</li>
+  <li>When <em>Ingestion Actor</em> is initialized, it will try to initialize <em>Master Actor</em>, who will spawn an arbitrary number of <em>Worker Actors</em>. After workers are initialized, <em>Master Actor</em> will notify <em>Ingestion Actor</em> that it’s ready to start processing.</li>
+  <li><em>Ingestion Actor</em> will start reading from a given file line by line, filter only valid ones, and pass it to <em>Master Actor</em>.</li>
+  <li><em>Master Actor</em> will distribute incoming requests from <em>Ingestion Actor</em> to <em>Worker</em> actors in a round-robin fashion.</li>
+</ul>
+
+<p>Finally, let’s review some code (eventually I will provide full implementation on Github).</p>
+
+<h3 id="applcation-entry-point">Applcation entry point</h3>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Application</span> <span class="k">extends</span> <span class="nc">App</span> <span class="o">{</span>
+
+  <span class="k">implicit</span> <span class="k">val</span> <span class="nv">system</span> <span class="k">=</span> <span class="nc">ActorSystem</span><span class="o">(</span><span class="s">"actor-system"</span><span class="o">)</span>
+
+  <span class="k">val</span> <span class="nv">supervisor</span> <span class="k">=</span> <span class="nv">system</span><span class="o">.</span><span class="py">actorOf</span><span class="o">(</span>
+    <span class="nv">Supervisor</span><span class="o">.</span><span class="py">props</span><span class="o">(</span><span class="s">"input"</span><span class="o">,</span> <span class="s">"output"</span><span class="o">,</span> <span class="mi">3</span><span class="o">),</span> <span class="s">"supervisor"</span>
+  <span class="o">)</span>
+  <span class="n">supervisor</span> <span class="o">!</span> <span class="nv">Supervisor</span><span class="o">.</span><span class="py">Start</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="supervisor-actor">Supervisor Actor</h3>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Supervisor</span> <span class="o">{</span>
+  <span class="k">final</span> <span class="k">object</span> <span class="nc">Start</span>
+  <span class="k">final</span> <span class="k">object</span> <span class="nc">Stop</span>
+
+  <span class="k">def</span> <span class="nf">props</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">output</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">parallelism</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span>
+    <span class="nc">Props</span><span class="o">(</span><span class="k">new</span> <span class="nc">Supervisor</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="n">output</span><span class="o">,</span> <span class="n">parallelism</span><span class="o">))</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>In a <em>SupervisorActor companion object</em>, all messages and methods for creating actor are defined. This pattern should be applied to every actor.</p>
+
+<p>Here is <em>SupervisorActor</em> implementation:</p>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Supervisor</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span><span class="n">output</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">parallelism</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span>
+  <span class="k">extends</span> <span class="nc">Actor</span>
+  <span class="k">with</span> <span class="nc">ActorLogging</span> <span class="o">{</span>
+  <span class="k">import</span> <span class="nn">Supervisor._</span>
+
+  <span class="k">val</span> <span class="nv">ingestion</span><span class="k">:</span> <span class="kt">ActorRef</span> <span class="o">=</span> <span class="nf">createIngestionActor</span><span class="o">()</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="nf">receive</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="nc">Start</span> <span class="k">=&gt;</span>
+      <span class="n">ingestion</span> <span class="o">!</span> <span class="nv">Ingestion</span><span class="o">.</span><span class="py">StartIngestion</span>
+    <span class="k">case</span> <span class="n">aggregate</span> <span class="k">@</span> <span class="nv">Master</span><span class="o">.</span><span class="py">Aggregate</span><span class="o">(</span><span class="k">_</span><span class="o">)</span> <span class="k">=&gt;</span>
+      <span class="nv">aggregate</span><span class="o">.</span><span class="py">result</span><span class="o">.</span><span class="py">foreach</span><span class="o">(</span><span class="n">println</span><span class="o">)</span>
+    <span class="k">case</span> <span class="nc">Stop</span> <span class="k">=&gt;</span>
+      <span class="nv">context</span><span class="o">.</span><span class="py">system</span><span class="o">.</span><span class="py">terminate</span><span class="o">()</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>The <em>Supervisor Actor</em> is simple. He is responsible for starting the whole data processing pipeline, stopping the actor system and printing results to console upon receiving it. For the sake of simplicity, I choose just to print the results, but in a real scenario, it could be something like writing results to some database, message queue or filesystem.</p>
+
+<h3 id="ingestion-actor">Ingestion Actor</h3>
+
+<p><em>Ingestion Actor</em> is responsible for reading a file from a given path, process it, and pass it to <em>Master Actor</em>. When the whole file is read, it will notify <em>Master Actor</em> that ingestion is done.</p>
+
+<p><em>IngestionActor companion object</em> implementation:</p>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Ingestion</span> <span class="o">{</span>
+  <span class="k">final</span> <span class="k">object</span> <span class="nc">StartIngestion</span>
+  <span class="k">final</span> <span class="k">object</span> <span class="nc">StopIngestion</span>
+  <span class="k">final</span> <span class="k">case</span> <span class="k">class</span> <span class="nc">Line</span><span class="o">(</span><span class="n">text</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
+
+  <span class="k">def</span> <span class="nf">props</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">output</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">nWorkers</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span>
+    <span class="nc">Props</span><span class="o">(</span><span class="k">new</span> <span class="nc">Ingestion</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="n">output</span><span class="o">,</span> <span class="n">nWorkers</span><span class="o">))</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>For those actors who have some additional functionalities, I prefer to implement an additional trait, where business logic is concentrated and will be just mixed with the actor. This makes the actor class clean and simple because we in it we are only dealing with behavior. Actor behavior is a way of message processing.</p>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">IngestionHandler</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="nv">ip</span><span class="k">:</span> <span class="kt">Regex</span> <span class="o">=</span> <span class="s">""".*?(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}).*"""</span><span class="o">.</span><span class="py">r</span>
+  <span class="k">val</span> <span class="nv">validIp</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=&gt;</span> <span class="nc">Boolean</span> <span class="k">=</span> <span class="n">line</span> <span class="k">=&gt;</span> <span class="nv">ip</span><span class="o">.</span><span class="py">matches</span><span class="o">(</span><span class="nv">line</span><span class="o">.</span><span class="py">split</span><span class="o">(</span><span class="s">","</span><span class="o">)(</span><span class="mi">0</span><span class="o">))</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>Here we have a simple function to validate if the line starts with an IP address or not, since we need only those lines that do.</p>
+
+<p>And finally, <em>IngestionActor</em> implementation:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Ingestion</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">output</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">nWorkers</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span>
+  <span class="k">extends</span> <span class="nc">Actor</span> 
+  <span class="k">with</span> <span class="nc">ActorLogging</span>
+  <span class="k">with</span> <span class="nc">IngestionHandler</span> <span class="o">{</span>
+  <span class="k">import</span> <span class="nn">Ingestion._</span>
+
+  <span class="k">val</span> <span class="nv">master</span><span class="k">:</span> <span class="kt">ActorRef</span> <span class="o">=</span> <span class="nf">createMasterActor</span><span class="o">()</span>
+  <span class="k">lazy</span> <span class="k">val</span> <span class="nv">source</span> <span class="k">=</span> <span class="nv">Source</span><span class="o">.</span><span class="py">fromFile</span><span class="o">(</span><span class="nf">createFile</span><span class="o">())</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="nf">receive</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="nc">StartIngestion</span> <span class="k">=&gt;</span>
+      <span class="nv">log</span><span class="o">.</span><span class="py">info</span><span class="o">(</span><span class="s">"Initializing Master Actor..."</span><span class="o">)</span>
+      <span class="n">master</span> <span class="o">!</span> <span class="nv">Master</span><span class="o">.</span><span class="py">Initialize</span>
+    <span class="k">case</span> <span class="nv">Master</span><span class="o">.</span><span class="py">MasterInitialized</span> <span class="k">=&gt;</span>
+      <span class="nv">log</span><span class="o">.</span><span class="py">info</span><span class="o">(</span><span class="s">"Starting ingestion..."</span><span class="o">)</span>
+      <span class="nv">source</span><span class="o">.</span><span class="py">getLines</span><span class="o">().</span><span class="py">filter</span><span class="o">(</span><span class="n">validIp</span><span class="o">).</span><span class="py">map</span><span class="o">(</span><span class="nc">Line</span><span class="o">).</span><span class="py">foreach</span><span class="o">(</span><span class="n">master</span> <span class="o">!</span> <span class="k">_</span><span class="o">)</span>
+      <span class="nv">log</span><span class="o">.</span><span class="py">info</span><span class="o">(</span><span class="s">"Collecting results..."</span><span class="o">)</span>
+      <span class="n">master</span> <span class="o">!</span> <span class="nv">Master</span><span class="o">.</span><span class="py">CollectResults</span>
+    <span class="k">case</span> <span class="n">aggregate</span> <span class="k">@</span> <span class="nv">Master</span><span class="o">.</span><span class="py">Aggregate</span><span class="o">(</span><span class="k">_</span><span class="o">)</span> <span class="k">=&gt;</span>
+      <span class="nv">context</span><span class="o">.</span><span class="py">parent</span><span class="o">.</span><span class="py">forward</span><span class="o">(</span><span class="n">aggregate</span><span class="o">)</span>
+      <span class="n">self</span> <span class="o">!</span> <span class="nc">StopIngestion</span>
+    <span class="k">case</span> <span class="nc">StopIngestion</span> <span class="k">=&gt;</span>
+      <span class="nv">source</span><span class="o">.</span><span class="py">close</span><span class="o">()</span>
+      <span class="nv">context</span><span class="o">.</span><span class="py">parent</span> <span class="o">!</span> <span class="nv">Supervisor</span><span class="o">.</span><span class="py">Stop</span>
+  <span class="o">}</span>
+</code></pre></div></div>
+
+<p>Upon initialization, <em>Master Actor</em> is spawned, and the data source is ready. When MasterInitialized message is received, <em>Ingestion Actor</em> start to read file line by line, filter only the valid ones, map them into <em>Line case class</em> and pass it to <em>Master Actor</em>. After whole file is read,
+<em>Ingestion Actor</em> demands results from  <em>Master Actor</em>. Note that all communication is fully asynchronous. Received results will be forwarded to the parent actor (<em>Supervisor Actor</em>). After that, the file stream is closed and the parent is notified about that with message <em>Stop</em>.</p>
+
+<h2 id="summary">Summary</h2>
+
+<p>In this article, I introduced the problem that we are trying to solve and the technology stack that is going to be used. Also, I hope you gained some basic understanding of how to implement actors and design an Actor System.</p>
+
+<p>This is it for now. In the next part of the series, we are going to review first <em>Worker Actor</em> and finally <em>Master Actor</em>, which is probably the most complicated part of the system.</p>
+
+<p>You can find me at:</p>
+<ul>
+  <li><a href="https://www.linkedin.com/in/aleksandar-skrbic/">Linkedin</a></li>
+  <li><a href="https://github.com/aleksandarskrbic">Github</a></li>
+</ul>
+
+<p>Or just send me a question to <a href="">skrbic.alexa@gmail.com</a></p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+  
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      
+      
+      <a href="http://localhost:4000/tags/#akka" class="page__taxonomy-item" rel="tag">akka</a><span class="sep">, </span>
+    
+      
+      
+      <a href="http://localhost:4000/tags/#big-data" class="page__taxonomy-item" rel="tag">big data</a><span class="sep">, </span>
+    
+      
+      
+      <a href="http://localhost:4000/tags/#jvm" class="page__taxonomy-item" rel="tag">jvm</a><span class="sep">, </span>
+    
+      
+      
+      <a href="http://localhost:4000/tags/#scala" class="page__taxonomy-item" rel="tag">scala</a>
+    
+    </span>
+  </p>
+
+
+
+
+        
+          <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-03-16T00:00:00+01:00">March 16, 2020</time></p>
+        
+      </footer>
+
+      <section class="page__share">
+  
+    <h4 class="page__share-title">Share on</h4>
+  
+
+  <a href="https://twitter.com/intent/tweet?text=Data+processing+with+Akka+Actors%3A+Part+I%20http%3A%2F%2Flocalhost%3A4000%2Fakka-actors-part-1%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A4000%2Fakka-actors-part-1%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+
+  <a href="https://plus.google.com/share?url=http%3A%2F%2Flocalhost%3A4000%2Fakka-actors-part-1%2F" class="btn btn--google-plus" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Google Plus"><i class="fab fa-fw fa-google-plus" aria-hidden="true"></i><span> Google+</span></a>
+
+  <a href="https://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2Flocalhost%3A4000%2Fakka-actors-part-1%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+</section>
+
+
+      
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title" itemprop="headline">
+      
+        <a href="http://localhost:4000/akka-actors-part-1/" rel="permalink">Data processing with Akka Actors: Part I
+</a>
+      
+    </h2>
+    
+      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  5 minute read
+</p>
+    
+    <p class="archive__item-excerpt" itemprop="description">Scala, Akka, JVM, Big Data
+</p>
+  </article>
+</div>
+        
+      </div>
+    </div>
+  
+</div>
+
+    </div>
+
+    
+
+    <div class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+      <li><strong>Follow:</strong></li>
+    
+    
+    
+    
+      <li><a href="https://github.com/aleksandarskrbic"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+    
+    
+    
+    <li><a href="http://localhost:4000/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Aleksandar Skrbic. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="http://localhost:4000/assets/js/main.min.js"></script>
+  <script src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
+
+
+
+
+
+
+
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+
+  </body>
+</html>

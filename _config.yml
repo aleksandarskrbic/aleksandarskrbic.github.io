@@ -79,7 +79,7 @@ social:
 analytics:
   provider               : false # false (default), "google", "google-universal", "custom"
   google:
-    tracking_id          :
+    tracking_id          : "UA-161429939-1"
 
 
 # Site Author
@@ -99,7 +99,6 @@ author:
   foursquare       :
   github           : "aleksandarskrbic"
   gitlab           :
-  google_plus      :
   keybase          :
   instagram        :
   lastfm           :
@@ -250,7 +249,7 @@ defaults:
       layout: single
       author_profile: true
       read_time: true
-      comments: # true
+      #comments: true
       share: true
       related: true
 

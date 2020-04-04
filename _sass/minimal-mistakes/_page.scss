@@ -55,6 +55,7 @@
 .page__title {
   margin-top: 0;
   line-height: 1;
+  font-size: $type-size-1;
 
   & + .page__meta {
     margin-top: -0.5em;
@@ -63,7 +64,7 @@
 
 .page__lead {
   font-family: $global-font-family;
-  font-size: $type-size-4;
+  font-size: $type-size-6;
 }
 
 .page__content {
@@ -75,7 +76,7 @@
   p,
   li,
   dl {
-    font-size: 1em;
+    font-size: $type-size-5;
   }
 
   /* paragraph indents */
