@@ -9,7 +9,7 @@
   <head>
     <meta charset="utf-8">
 
-<!-- begin _includes/seo.html --><title>Aleksandar Skrbic</title>
+<!-- begin _includes/seo.html --><title>Search - Aleksandar Skrbic</title>
 <meta name="description" content="Blog about modern software engineering">
 
 
@@ -17,13 +17,13 @@
 <meta property="og:type" content="website">
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Aleksandar Skrbic">
-<meta property="og:title" content="Aleksandar Skrbic">
-<meta property="og:url" content="http://localhost:4000/">
+<meta property="og:title" content="Search">
+<meta property="og:url" content="http://localhost:4000/search/">
 
 
 
 
-  <meta property="og:image" content="http://localhost:4000/images/header.jpg">
+  <meta property="og:image" content="http://localhost:4000/images/h3.jpg">
 
 
 
@@ -32,13 +32,13 @@
 
 
 
-
-  
 
   
 
+  
 
-<link rel="canonical" href="http://localhost:4000/">
+
+<link rel="canonical" href="http://localhost:4000/search/">
 
 
 
@@ -102,7 +102,7 @@
 <!-- end custom head snippets -->
   </head>
 
-  <body class="layout--home">
+  <body class="layout--single">
 
     <!--[if lt IE 9]>
 <div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
@@ -155,7 +155,7 @@
   style=" "
 >
   
-    <img src="http://localhost:4000/images/header.jpg" alt="" class="page__hero-image">
+    <img src="http://localhost:4000/images/h3.jpg" alt="Search" class="page__hero-image">
   
   
 </div>
@@ -284,46 +284,65 @@
   </div>
 
 
-  <div class="archive">
+  <article class="page" itemscope itemtype="http://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Search">
     
-      <h1 class="page__title"></h1>
     
-    <h3 class="archive__subtitle">Recent Posts</h3>
+    
 
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 class="page__title" itemprop="headline">Search
+</h1>
+          
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+        <!-- Html Elements for Search -->
+<div id="search-container">
+<input type="text" id="search-input" placeholder="Enter article name or tag(java, scala, akka, big data, kafka)" />
+<ul id="results-container"></ul>
+</div>
+
+<!-- Script pointing to search-script.js -->
+<script src="../search-script.js" type="text/javascript"></script>
+
+<!-- Configuration -->
+<script>
+SimpleJekyllSearch({
+  searchInput: document.getElementById('search-input'),
+  resultsContainer: document.getElementById('results-container'),
+  json: '../search.json'
+})
+</script>
+
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+
+
+        
+      </footer>
+
+      
+
+      
+    </div>
+
+    
+  </article>
 
   
-
-
-
-<div class="list__item">
-  <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
-    
-    <h2 class="archive__item-title" itemprop="headline">
-      
-        <a href="http://localhost:4000/akka-actors-1/" rel="permalink">Data processing with Akka Actors: Part I
-</a>
-      
-    </h2>
-    
-      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
-
-
-
-
-  5 minute read
-</p>
-    
-    <p class="archive__item-excerpt" itemprop="description">Scala, Akka, JVM, Big Data
-</p>
-  </article>
+  
 </div>
 
-
-
-
-
-  </div>
-</div>
     </div>
 
     
