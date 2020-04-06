@@ -64,9 +64,9 @@ object Supervisor {
 }
 ```
 
-In a *SupervisorActor companion object*, all messages and methods for creating actor are defined. This pattern should be applied to every actor.
+In a *Supervisor Actor companion object*, all messages and methods for creating actor are defined. This pattern should be applied to every actor.
 
-Here is *SupervisorActor* implementation:
+Here is *Supervisor Actor* implementation:
 ```scala
 class Supervisor(input: String,output: String, parallelism: Int)
   extends Actor
@@ -91,7 +91,7 @@ The *Supervisor Actor* is simple. He is responsible for starting the whole data 
 
 *Ingestion Actor* is responsible for reading a file from a given path, process it, and pass it to *Master Actor*. When the whole file is read, it will notify *Master Actor* that ingestion is done.
 
-*IngestionActor companion object* implementation:
+*Ingestion Actor companion object* implementation:
 ```scala
 object Ingestion {
   final object StartIngestion
@@ -102,7 +102,7 @@ object Ingestion {
     Props(new Ingestion(input, output, nWorkers))
 }
 ```
-For those actors who have some additional functionalities, I prefer to implement an additional trait, where business logic is concentrated and will be just mixed with the actor. This makes the actor class clean and simple because we in it we are only dealing with behavior. Actor behavior is a way of message processing.
+For those actors who have some additional functionalities, I prefer to implement an additional trait, where business logic is concentrated and will be just mixed with the actor. This makes the actor class clean and simple because in it we are only dealing with behavior. Actor behavior is a way of message processing.
 ```scala
 trait IngestionHandler {
   val ip: Regex = """.*?(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}).*""".r
