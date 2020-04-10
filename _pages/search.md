@@ -3,7 +3,7 @@ title: "Search"
 permalink: /search/
 author_profile: true
 header:
-  image: "/images/h3.jpg"
+  image: "/images/search-header.jpg"
 ---
 
 <!-- Html Elements for Search -->

@@ -36,9 +36,9 @@ To give you more details about the problem that we are going to solve using Akka
 * *Ingestion Actor* will start reading from a given file line by line, filter only valid ones, and pass it to *Master Actor*.
 * *Master Actor* will distribute incoming requests from *Ingestion Actor* to *Worker* actors in a round-robin fashion. 
 
-Finally, let's review some code (eventually I will provide full implementation on Github).
+Finally, let's review some code.
 
-### Applcation entry point
+## Applcation entry point
 
 ```scala
 object Application extends App {
@@ -52,7 +52,7 @@ object Application extends App {
 }
 ```
 
-### Supervisor Actor
+## Supervisor Actor
 
 ```scala
 object Supervisor {
@@ -87,7 +87,7 @@ class Supervisor(input: String,output: String, parallelism: Int)
 ```
 The *Supervisor Actor* is simple. He is responsible for starting the whole data processing pipeline, stopping the actor system and printing results to console upon receiving it. For the sake of simplicity, I choose just to print the results, but in a real scenario, it could be something like writing results to some database, message queue or filesystem.
 
-### Ingestion Actor
+## Ingestion Actor
 
 *Ingestion Actor* is responsible for reading a file from a given path, process it, and pass it to *Master Actor*. When the whole file is read, it will notify *Master Actor* that ingestion is done.
 
@@ -102,7 +102,7 @@ object Ingestion {
     Props(new Ingestion(input, output, nWorkers))
 }
 ```
-For those actors who have some additional functionalities, I prefer to implement an additional trait, where business logic is concentrated and will be just mixed with the actor. This makes the actor class clean and simple because in it we are only dealing with behavior. Actor behavior is a way of message processing.
+For those actors who have some additional functionalities, I prefer to implement an additional trait, where business logic is concentrated and will be just mixed with the actor. This makes the actor class clean and simple because in it we are only dealing with behavior. Actor behavior is a way of a message processing.
 ```scala
 trait IngestionHandler {
   val ip: Regex = """.*?(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}).*""".r
@@ -111,7 +111,7 @@ trait IngestionHandler {
 ```
 Here we have a simple function to validate if the line starts with an IP address or not, since we need only those lines that do.
 
-And finally, *IngestionActor* implementation:
+And finally, *Ingestion Actor* implementation:
 
 ```scala
 class Ingestion(input: String, output: String, nWorkers: Int)
@@ -141,8 +141,8 @@ class Ingestion(input: String, output: String, nWorkers: Int)
   }
 ```
 
-Upon initialization, *Master Actor* is spawned, and the data source is ready. When MasterInitialized message is received, *Ingestion Actor* start to read file line by line, filter only the valid ones, map them into *Line case class* and pass it to *Master Actor*. After whole file is read,
-*Ingestion Actor* demands results from  *Master Actor*. Note that all communication is fully asynchronous. Received results will be forwarded to the parent actor (*Supervisor Actor*). After that, the file stream is closed and the parent is notified about that with message *Stop*.
+Upon initialization, *Master Actor* is spawned, and the data source is ready. When **MasterInitialized** message is received, *Ingestion Actor* start to read file line by line, filter only the valid ones, map them into **Line** case class and pass it to *Master Actor*. After whole file is read,
+*Ingestion Actor* demands results from  *Master Actor*. Note that all communication is fully asynchronous. Received results will be forwarded to the parent actor (*Supervisor Actor*). After that, the file stream is closed and the parent is notified about that with message **Stop**.
 
 ## Summary
 

@@ -184,7 +184,7 @@
     
     
       <p class="author__bio" itemprop="description">
-        Software Engineer interested in distributed and data-intensive systems.
+        Blogging mostly about distributed systems, databases and big data.
       </p>
     
   </div>
@@ -344,9 +344,9 @@ In the actor programming model, the base unit is an actor obviously, and actors 
   <li><em>Master Actor</em> will distribute incoming requests from <em>Ingestion Actor</em> to <em>Worker</em> actors in a round-robin fashion.</li>
 </ul>
 
-<p>Finally, let’s review some code (eventually I will provide full implementation on Github).</p>
+<p>Finally, let’s review some code.</p>
 
-<h3 id="applcation-entry-point">Applcation entry point</h3>
+<h2 id="applcation-entry-point">Applcation entry point</h2>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Application</span> <span class="k">extends</span> <span class="nc">App</span> <span class="o">{</span>
 
@@ -359,7 +359,7 @@ In the actor programming model, the base unit is an actor obviously, and actors 
 <span class="o">}</span>
 </code></pre></div></div>
 
-<h3 id="supervisor-actor">Supervisor Actor</h3>
+<h2 id="supervisor-actor">Supervisor Actor</h2>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Supervisor</span> <span class="o">{</span>
   <span class="k">final</span> <span class="k">object</span> <span class="nc">Start</span>
@@ -370,9 +370,9 @@ In the actor programming model, the base unit is an actor obviously, and actors 
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>In a <em>SupervisorActor companion object</em>, all messages and methods for creating actor are defined. This pattern should be applied to every actor.</p>
+<p>In a <em>Supervisor Actor companion object</em>, all messages and methods for creating actor are defined. This pattern should be applied to every actor.</p>
 
-<p>Here is <em>SupervisorActor</em> implementation:</p>
+<p>Here is <em>Supervisor Actor</em> implementation:</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Supervisor</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span><span class="n">output</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">parallelism</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span>
   <span class="k">extends</span> <span class="nc">Actor</span>
   <span class="k">with</span> <span class="nc">ActorLogging</span> <span class="o">{</span>
@@ -392,11 +392,11 @@ In the actor programming model, the base unit is an actor obviously, and actors 
 </code></pre></div></div>
 <p>The <em>Supervisor Actor</em> is simple. He is responsible for starting the whole data processing pipeline, stopping the actor system and printing results to console upon receiving it. For the sake of simplicity, I choose just to print the results, but in a real scenario, it could be something like writing results to some database, message queue or filesystem.</p>
 
-<h3 id="ingestion-actor">Ingestion Actor</h3>
+<h2 id="ingestion-actor">Ingestion Actor</h2>
 
 <p><em>Ingestion Actor</em> is responsible for reading a file from a given path, process it, and pass it to <em>Master Actor</em>. When the whole file is read, it will notify <em>Master Actor</em> that ingestion is done.</p>
 
-<p><em>IngestionActor companion object</em> implementation:</p>
+<p><em>Ingestion Actor companion object</em> implementation:</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Ingestion</span> <span class="o">{</span>
   <span class="k">final</span> <span class="k">object</span> <span class="nc">StartIngestion</span>
   <span class="k">final</span> <span class="k">object</span> <span class="nc">StopIngestion</span>
@@ -406,7 +406,7 @@ In the actor programming model, the base unit is an actor obviously, and actors 
     <span class="nc">Props</span><span class="o">(</span><span class="k">new</span> <span class="nc">Ingestion</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="n">output</span><span class="o">,</span> <span class="n">nWorkers</span><span class="o">))</span>
 <span class="o">}</span>
 </code></pre></div></div>
-<p>For those actors who have some additional functionalities, I prefer to implement an additional trait, where business logic is concentrated and will be just mixed with the actor. This makes the actor class clean and simple because we in it we are only dealing with behavior. Actor behavior is a way of message processing.</p>
+<p>For those actors who have some additional functionalities, I prefer to implement an additional trait, where business logic is concentrated and will be just mixed with the actor. This makes the actor class clean and simple because in it we are only dealing with behavior. Actor behavior is a way of a message processing.</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">IngestionHandler</span> <span class="o">{</span>
   <span class="k">val</span> <span class="nv">ip</span><span class="k">:</span> <span class="kt">Regex</span> <span class="o">=</span> <span class="s">""".*?(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}).*"""</span><span class="o">.</span><span class="py">r</span>
   <span class="k">val</span> <span class="nv">validIp</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=&gt;</span> <span class="nc">Boolean</span> <span class="k">=</span> <span class="n">line</span> <span class="k">=&gt;</span> <span class="nv">ip</span><span class="o">.</span><span class="py">matches</span><span class="o">(</span><span class="nv">line</span><span class="o">.</span><span class="py">split</span><span class="o">(</span><span class="s">","</span><span class="o">)(</span><span class="mi">0</span><span class="o">))</span>
@@ -414,7 +414,7 @@ In the actor programming model, the base unit is an actor obviously, and actors 
 </code></pre></div></div>
 <p>Here we have a simple function to validate if the line starts with an IP address or not, since we need only those lines that do.</p>
 
-<p>And finally, <em>IngestionActor</em> implementation:</p>
+<p>And finally, <em>Ingestion Actor</em> implementation:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Ingestion</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">output</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">nWorkers</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span>
   <span class="k">extends</span> <span class="nc">Actor</span> 
@@ -443,8 +443,8 @@ In the actor programming model, the base unit is an actor obviously, and actors 
   <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Upon initialization, <em>Master Actor</em> is spawned, and the data source is ready. When MasterInitialized message is received, <em>Ingestion Actor</em> start to read file line by line, filter only the valid ones, map them into <em>Line case class</em> and pass it to <em>Master Actor</em>. After whole file is read,
-<em>Ingestion Actor</em> demands results from  <em>Master Actor</em>. Note that all communication is fully asynchronous. Received results will be forwarded to the parent actor (<em>Supervisor Actor</em>). After that, the file stream is closed and the parent is notified about that with message <em>Stop</em>.</p>
+<p>Upon initialization, <em>Master Actor</em> is spawned, and the data source is ready. When <strong>MasterInitialized</strong> message is received, <em>Ingestion Actor</em> start to read file line by line, filter only the valid ones, map them into <strong>Line</strong> case class and pass it to <em>Master Actor</em>. After whole file is read,
+<em>Ingestion Actor</em> demands results from  <em>Master Actor</em>. Note that all communication is fully asynchronous. Received results will be forwarded to the parent actor (<em>Supervisor Actor</em>). After that, the file stream is closed and the parent is notified about that with message <strong>Stop</strong>.</p>
 
 <h2 id="summary">Summary</h2>
 
@@ -520,6 +520,16 @@ In the actor programming model, the base unit is an actor obviously, and actors 
 
 
       
+  <nav class="pagination">
+    
+      <a href="#" class="pagination--pager disabled">Previous</a>
+    
+    
+      <a href="http://localhost:4000/akka-actors-2/" class="pagination--pager" title="Data processing with Akka Actors: Part II
+">Next</a>
+    
+  </nav>
+
     </div>
 
     
@@ -540,7 +550,7 @@ In the actor programming model, the base unit is an actor obviously, and actors 
     
     <h2 class="archive__item-title" itemprop="headline">
       
-        <a href="http://localhost:4000/akka-actors-1/" rel="permalink">Data processing with Akka Actors: Part I
+        <a href="http://localhost:4000/akka-actors-2/" rel="permalink">Data processing with Akka Actors: Part II
 </a>
       
     </h2>
@@ -550,7 +560,7 @@ In the actor programming model, the base unit is an actor obviously, and actors 
 
 
 
-  5 minute read
+  8 minute read
 </p>
     
     <p class="archive__item-excerpt" itemprop="description">Scala, Akka, JVM, Big Data
@@ -560,6 +570,7 @@ In the actor programming model, the base unit is an actor obviously, and actors 
         
       </div>
     </div>
+  
   
 </div>
 

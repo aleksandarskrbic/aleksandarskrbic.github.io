@@ -87,7 +87,7 @@ analytics:
 author:
   name             : "Aleksandar Skrbic"
 # avatar           : "/images/bio-pic-2.jpg" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio              : "Software Engineer interested in distributed and data-intensive systems."
+  bio              : "Blogging mostly about distributed systems, databases and big data."
   location         : "Novi Sad, Serbia"
   email            : "skrbic.alexa@gmail.com"
   uri              :
