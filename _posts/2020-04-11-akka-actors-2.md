@@ -220,6 +220,8 @@ class Master(nWorkers: Int) extends Actor
  with MasterHandler {
   import Master._
 
+  val results = new ArrayBuffer[Worker.ResultResponse]()
+
   override def receive: Receive = {
     case Initialize =>
       log.info(s"Spawning $nWorkers workers...")
@@ -239,8 +241,6 @@ class Master(nWorkers: Int) extends Actor
       workers.foreach(_ ! Worker.ResultRequest)
       context.become(collectResults())
   }
-
-  val results = new ArrayBuffer[Worker.ResultResponse]()
 
   def collectResults(): Receive = {
     case response @ Worker.ResultResponse(_, _) =>
