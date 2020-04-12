@@ -85,11 +85,12 @@ class Supervisor(input: String,output: String, parallelism: Int)
   }
 }
 ```
-The *Supervisor Actor* is simple. He is responsible for starting the whole data processing pipeline, stopping the actor system and printing results to console upon receiving it. For the sake of simplicity, I choose just to print the results, but in a real scenario, it could be something like writing results to some database, message queue or filesystem.
+
+The Supervisor Actor is simple. He is responsible for starting the whole data processing pipeline,  printing results to console upon receiving it, and stopping the actor system. For the sake of simplicity, I choose just to print the results, but in a real scenario, it could be something like writing results to some database, message queue or filesystem. Also shutting down the actor system upon finishing all tasks is very important since it a heavyweight structure which upon initialization allocates threads, and to release them you need to stop the actor system.
 
 ## Ingestion Actor
 
-*Ingestion Actor* is responsible for reading a file from a given path, process it, and pass it to *Master Actor*. When the whole file is read, it will notify *Master Actor* that ingestion is done.
+*Ingestion Actor* is responsible for reading a file from a given path, process it, and pass it to a *Master Actor*. When the whole file is read, it will notify *Master Actor* that ingestion is done.
 
 *Ingestion Actor companion object* implementation:
 ```scala

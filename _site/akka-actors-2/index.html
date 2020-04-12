@@ -31,7 +31,7 @@
 
 
 
-  <meta property="article:published_time" content="2020-04-10T00:00:00+02:00">
+  <meta property="article:published_time" content="2020-04-11T00:00:00+02:00">
 
 
 
@@ -291,7 +291,7 @@
   <article class="page" itemscope itemtype="http://schema.org/CreativeWork">
     <meta itemprop="headline" content="Data processing with Akka Actors: Part II">
     <meta itemprop="description" content="Scala, Akka, JVM, Big Data">
-    <meta itemprop="datePublished" content="April 10, 2020">
+    <meta itemprop="datePublished" content="April 11, 2020">
     
 
     <div class="page__inner-wrap">
@@ -305,7 +305,7 @@
 
 
 
-  8 minute read
+  7 minute read
 </p>
           
         </header>
@@ -316,7 +316,7 @@
         
 <p>In the <a href="/akka-actors-1/">first article</a> in the <em>Data processing with Akka Actors series</em>, I have introduced a problem that we are trying to solve. There was some talk about actors and how to organize them into an actor hierarchy. Then we got deep into details while implementing two simple actors with Scala describing message flow protocol between them and explaining the relationships among actors in the defined actor hierarchy.</p>
 
-<p><em>Supervisor Actor</em> and <em>Ingestion Actor</em> are already implemented and discussed in detail and if you remember the actor hierarchy diagram from the <a href="/akka-actors-1/">first article</a> you know that we are going to implement two more actors: <em>Master Actor</em> and <em>Worker Actor</em>. Since <em>Master Actor</em> is the brain of our application, who is responsible for distributing incoming requests to workers and gathering results from them when data processing is finished, most complex actor among all, we will first implement <em>Worker Actor</em>.</p>
+<p><em>Supervisor Actor</em> and <em>Ingestion Actor</em> are already implemented and discussed in detail and if you remember the actor hierarchy diagram from the <a href="/akka-actors-1/">first article</a> you know that we are going to implement two more actors: <em>Master Actor</em> and <em>Worker Actor</em>. Since Master Actor is the brain of our application and most complex among all actors, who is responsible for distributing incoming requests to workers and gathering results from them when data processing is finished, we will first implement Worker Actor.</p>
 
 <h2 id="worker-actor">Worker Actor</h2>
 
@@ -356,7 +356,8 @@
   <span class="o">}</span>
 <span class="o">}</span>
 </code></pre></div></div>
-<p>Here is a simple function that just parses string that is extracted from <strong>Line</strong> case class and transforms it to <strong>Log</strong> case class. My implementation relies heavily on pattern matching because I like the way it allows us to deconstruct case classes and collections. If you want to found out more about pattern matching in Scala or you are not very clear about it, feel free to reach me or read <a href="https://docs.scala-lang.org/tour/pattern-matching.html">this</a>.</p>
+
+<p>This implementation relies heavily on pattern matching because I like the way it allows us to deconstruct case classes and collections. If you want to found out more about pattern matching in Scala or you are not very clear about it, feel free to reach me or read <a href="https://docs.scala-lang.org/tour/pattern-matching.html">this</a>.</p>
 
 <p>Finally, let’s review <em>Worker Actor</em> implementation:</p>
 
@@ -512,6 +513,8 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
  <span class="k">with</span> <span class="nc">MasterHandler</span> <span class="o">{</span>
   <span class="k">import</span> <span class="nn">Master._</span>
 
+  <span class="k">val</span> <span class="nv">results</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ArrayBuffer</span><span class="o">[</span><span class="kt">Worker.ResultResponse</span><span class="o">]()</span>
+
   <span class="k">override</span> <span class="k">def</span> <span class="nf">receive</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
     <span class="k">case</span> <span class="nc">Initialize</span> <span class="k">=&gt;</span>
       <span class="nv">log</span><span class="o">.</span><span class="py">info</span><span class="o">(</span><span class="n">s</span><span class="s">"Spawning $nWorkers workers..."</span><span class="o">)</span>
@@ -532,8 +535,6 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
       <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">collectResults</span><span class="o">())</span>
   <span class="o">}</span>
 
-  <span class="k">val</span> <span class="nv">results</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ArrayBuffer</span><span class="o">[</span><span class="kt">Worker.ResultResponse</span><span class="o">]()</span>
-
   <span class="k">def</span> <span class="nf">collectResults</span><span class="o">()</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
     <span class="k">case</span> <span class="n">response</span> <span class="k">@</span> <span class="nv">Worker</span><span class="o">.</span><span class="py">ResultResponse</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">=&gt;</span>
       <span class="n">results</span> <span class="o">+=</span> <span class="n">response</span>
@@ -552,7 +553,7 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
 <p>This is the last part of <em>Data processing with Akka Actors</em> series. Here is the source code if you want to play with it or even improve it.
 Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog">Data processing with Akka Actors</a>.</p>
 
-<p>You learned how to write a relatively simple application with Akka, how to design master-worker architecture and how to implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor codebase to use Typed Actors and to implement supervision strategy for actors. Check official Akka documentation on <a href="https://doc.akka.io/docs/akka/2.6/general/supervision.html">Supervision and Monitoring</a> to learn more about it. Another way to improve this application will be to completely remove <em>Master Actor</em> and to use <a href="https://doc.akka.io/docs/akka/current/routing.html">Akka Routers</a>, that can easily help us to distribute request among workers without worrying about algorithms like round-robin or some else, without need to implement them on your own, as we did here for the purpose of learning.</p>
+<p>You learned how to write a relatively simple application with Akka, how to design master-worker architecture and how to implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor codebase to use Typed Actors and to implement supervision strategy for actors. Check official Akka documentation on <a href="https://doc.akka.io/docs/akka/2.6/general/supervision.html">Supervision and Monitoring</a> to learn more about it. Another way to improve this application will be to completely remove <em>Master Actor</em> and to use <a href="https://doc.akka.io/docs/akka/current/routing.html">Akka Routers</a>, that can easily help us to distribute request among workers without worrying about the implementation of algorithms like round-robin or some else, as we did here for the purpose of learning.</p>
 
 <p>Some of these improvements will be a theme for another article.</p>
 
@@ -604,7 +605,7 @@ Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog
 
 
         
-          <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-04-10T00:00:00+02:00">April 10, 2020</time></p>
+          <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-04-11T00:00:00+02:00">April 11, 2020</time></p>
         
       </footer>
 

@@ -390,11 +390,12 @@ In the actor programming model, the base unit is an actor obviously, and actors 
   <span class="o">}</span>
 <span class="o">}</span>
 </code></pre></div></div>
-<p>The <em>Supervisor Actor</em> is simple. He is responsible for starting the whole data processing pipeline, stopping the actor system and printing results to console upon receiving it. For the sake of simplicity, I choose just to print the results, but in a real scenario, it could be something like writing results to some database, message queue or filesystem.</p>
+
+<p>The Supervisor Actor is simple. He is responsible for starting the whole data processing pipeline,  printing results to console upon receiving it, and stopping the actor system. For the sake of simplicity, I choose just to print the results, but in a real scenario, it could be something like writing results to some database, message queue or filesystem. Also shutting down the actor system upon finishing all tasks is very important since it a heavyweight structure which upon initialization allocates threads, and to release them you need to stop the actor system.</p>
 
 <h2 id="ingestion-actor">Ingestion Actor</h2>
 
-<p><em>Ingestion Actor</em> is responsible for reading a file from a given path, process it, and pass it to <em>Master Actor</em>. When the whole file is read, it will notify <em>Master Actor</em> that ingestion is done.</p>
+<p><em>Ingestion Actor</em> is responsible for reading a file from a given path, process it, and pass it to a <em>Master Actor</em>. When the whole file is read, it will notify <em>Master Actor</em> that ingestion is done.</p>
 
 <p><em>Ingestion Actor companion object</em> implementation:</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Ingestion</span> <span class="o">{</span>

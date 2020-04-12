@@ -1,6 +1,6 @@
 ---
 title: "Data processing with Akka Actors: Part II"
-date: 2020-04-10
+date: 2020-04-11
 header:
   image: "/images/akka/akka-h1.jpg"
 tags: [scala, akka, jvm, big data]
@@ -11,7 +11,7 @@ excerpt: "Scala, Akka, JVM, Big Data"
 
 In the [first article]({% post_url 2020-04-04-akka-actors-1 %}) in the *Data processing with Akka Actors series*, I have introduced a problem that we are trying to solve. There was some talk about actors and how to organize them into an actor hierarchy. Then we got deep into details while implementing two simple actors with Scala describing message flow protocol between them and explaining the relationships among actors in the defined actor hierarchy.
 
-*Supervisor Actor* and *Ingestion Actor* are already implemented and discussed in detail and if you remember the actor hierarchy diagram from the [first article]({% post_url 2020-04-04-akka-actors-1 %}) you know that we are going to implement two more actors: *Master Actor* and *Worker Actor*. Since *Master Actor* is the brain of our application, who is responsible for distributing incoming requests to workers and gathering results from them when data processing is finished, most complex actor among all, we will first implement *Worker Actor*.
+*Supervisor Actor* and *Ingestion Actor* are already implemented and discussed in detail and if you remember the actor hierarchy diagram from the [first article]({% post_url 2020-04-04-akka-actors-1 %}) you know that we are going to implement two more actors: *Master Actor* and *Worker Actor*. Since Master Actor is the brain of our application and most complex among all actors, who is responsible for distributing incoming requests to workers and gathering results from them when data processing is finished, we will first implement Worker Actor.
 
 ## Worker Actor
 
@@ -51,7 +51,8 @@ trait WorkerHandler {
   }
 }
 ```
-Here is a simple function that just parses string that is extracted from **Line** case class and transforms it to **Log** case class. My implementation relies heavily on pattern matching because I like the way it allows us to deconstruct case classes and collections. If you want to found out more about pattern matching in Scala or you are not very clear about it, feel free to reach me or read [this](https://docs.scala-lang.org/tour/pattern-matching.html).
+
+This implementation relies heavily on pattern matching because I like the way it allows us to deconstruct case classes and collections. If you want to found out more about pattern matching in Scala or you are not very clear about it, feel free to reach me or read [this](https://docs.scala-lang.org/tour/pattern-matching.html).
 
 Finally, let's review *Worker Actor* implementation:
 
@@ -260,7 +261,7 @@ class Master(nWorkers: Int) extends Actor
 This is the last part of *Data processing with Akka Actors* series. Here is the source code if you want to play with it or even improve it.
 Github repository: [Data processing with Akka Actors](https://github.com/aleksandarskrbic/akka-actors-blog).
 
-You learned how to write a relatively simple application with Akka, how to design master-worker architecture and how to implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor codebase to use Typed Actors and to implement supervision strategy for actors. Check official Akka documentation on [Supervision and Monitoring](https://doc.akka.io/docs/akka/2.6/general/supervision.html) to learn more about it. Another way to improve this application will be to completely remove *Master Actor* and to use [Akka Routers](https://doc.akka.io/docs/akka/current/routing.html), that can easily help us to distribute request among workers without worrying about algorithms like round-robin or some else, without need to implement them on your own, as we did here for the purpose of learning.
+You learned how to write a relatively simple application with Akka, how to design master-worker architecture and how to implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor codebase to use Typed Actors and to implement supervision strategy for actors. Check official Akka documentation on [Supervision and Monitoring](https://doc.akka.io/docs/akka/2.6/general/supervision.html) to learn more about it. Another way to improve this application will be to completely remove *Master Actor* and to use [Akka Routers](https://doc.akka.io/docs/akka/current/routing.html), that can easily help us to distribute request among workers without worrying about the implementation of algorithms like round-robin or some else, as we did here for the purpose of learning.
 
 Some of these improvements will be a theme for another article.
 
