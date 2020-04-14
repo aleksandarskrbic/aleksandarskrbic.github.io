@@ -102,9 +102,32 @@ state.get(status) match {
 ```
 
 Here we have some pattern matching again.
-Since *Map* from Scala Collections returns *Option[V]*, we are able to pattern match against it. If there is some value we will get *Some(value)* and if *Option* is empty we will get *None*. To learn more about *Option type* check [this](https://www.scala-lang.org/api/current/scala/Option.html).
+Since *Map* from Scala Collections returns *Option[T]*, we are able to pattern match against it. If there is some value we will get *Some(value)* and if value is absent we will get *None*. To learn more about *Option type* check [this](https://www.scala-lang.org/api/current/scala/Option.html).
 
 And that is a full implementation of a *Worker Actors*, simple as that.
+But to improve our actor design, let's remove the state variable, and just pass it through behaviour, like this:
+
+```scala
+override def receive: Receive = process(Map.empty)
+
+def process(state: Map[StatusCode, Count]): Receive = {
+  case Ingestion.Line(text) =>
+    val status = toLog(text).status
+    state.get(status) match {
+      case Some(count) =>
+        val newState = state + (status -> (count + 1))
+        context.become(process(newState))
+      case None =>
+        val newState = state + (status -> 1)
+        context.become(process(newState))
+    }
+
+  case ResultRequest =>
+    sender() ! ResultResponse(id, state)
+}
+```
+
+Result of removing mutable state is an even cleaner and simpler actor.
 
 ## Master Actor
 
@@ -194,7 +217,29 @@ def collectResults(): Receive = {
 }
 ```
 
-Here you can see that we introduced *results* which is a collection of all received messages from workers. When all results are collected from workers, we will transform responses to the final result and pass it to the parent(*Ingestion Actor*).
+Here you can see that we introduced *results* which is a collection of all received messages from workers. When all results are collected from workers, we will transform responses to the final result and pass it to the parent(*Ingestion Actor*), but it's better to pass this *results* via behaviour, like we did it in *Worker Actor*.  The first step is to change how *forwardTask* handles *CollectResults*:
+
+```scala
+case CollectResults => {
+  workers.foreach(_ ! Worker.ResultRequest)
+  context.become(collectResults(Seq.empty))
+}
+```
+
+Finally, we need to do some modifications in "collectResults" behaviour.
+
+```scala
+def collectResults(agg: Seq[ResultResponse]): Receive = {
+  case res @ ResultResponse(_, _) if agg.length == (nWorkers - 1) =>
+    context.parent ! toAggregate(agg +: results)
+  case res @ ResultResponse(_, _) =>
+    context.become(collectResults(agg +: results))
+}
+```
+
+I first introduced variables, because for most people at first, it's hard to pass the state via behaviour. It will take some time till you get used to it, I also had a problem to fully understand this pattern.
+
+Let's review the rest of the *Master Actors* code:
 
 ```scala
 trait MasterHandler {
@@ -221,8 +266,6 @@ class Master(nWorkers: Int) extends Actor
  with MasterHandler {
   import Master._
 
-  val results = new ArrayBuffer[Worker.ResultResponse]()
-
   override def receive: Receive = {
     case Initialize =>
       log.info(s"Spawning $nWorkers workers...")
@@ -240,15 +283,14 @@ class Master(nWorkers: Int) extends Actor
       context.become(forwardTask(workers, nextWorker))
     case CollectResults =>
       workers.foreach(_ ! Worker.ResultRequest)
-      context.become(collectResults())
+      context.become(collectResults(Seq.empty))
   }
 
-  def collectResults(): Receive = {
-    case response @ Worker.ResultResponse(_, _) =>
-      results += response
-      if (results.length == nWorkers) {
-        context.parent ! toAggregate(results.toSeq)
-      }
+  def collectResults(agg: Seq[ResultResponse]): Receive = {
+    case res @ ResultResponse(_, _) if agg.length == (nWorkers - 1) =>
+      context.parent ! toAggregate(agg +: results)
+    case res @ ResultResponse(_, _) =>
+      context.become(collectResults(agg +: results))
   }
 
   def createWorker(index: Int): ActorRef =

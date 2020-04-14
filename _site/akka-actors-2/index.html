@@ -305,7 +305,7 @@
 
 
 
-  7 minute read
+  9 minute read
 </p>
           
         </header>
@@ -404,9 +404,31 @@
 </code></pre></div></div>
 
 <p>Here we have some pattern matching again.
-Since <em>Map</em> from Scala Collections returns <em>Option[V]</em>, we are able to pattern match against it. If there is some value we will get <em>Some(value)</em> and if <em>Option</em> is empty we will get <em>None</em>. To learn more about <em>Option type</em> check <a href="https://www.scala-lang.org/api/current/scala/Option.html">this</a>.</p>
+Since <em>Map</em> from Scala Collections returns <em>Option[T]</em>, we are able to pattern match against it. If there is some value we will get <em>Some(value)</em> and if value is absent we will get <em>None</em>. To learn more about <em>Option type</em> check <a href="https://www.scala-lang.org/api/current/scala/Option.html">this</a>.</p>
 
-<p>And that is a full implementation of a <em>Worker Actors</em>, simple as that.</p>
+<p>And that is a full implementation of a <em>Worker Actors</em>, simple as that.
+But to improve our actor design, let’s remove the state variable, and just pass it through behaviour, like this:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">override</span> <span class="k">def</span> <span class="nf">receive</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="nf">process</span><span class="o">(</span><span class="nv">Map</span><span class="o">.</span><span class="py">empty</span><span class="o">)</span>
+
+<span class="k">def</span> <span class="nf">process</span><span class="o">(</span><span class="n">state</span><span class="k">:</span> <span class="kt">Map</span><span class="o">[</span><span class="kt">StatusCode</span>, <span class="kt">Count</span><span class="o">])</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="nv">Ingestion</span><span class="o">.</span><span class="py">Line</span><span class="o">(</span><span class="n">text</span><span class="o">)</span> <span class="k">=&gt;</span>
+    <span class="k">val</span> <span class="nv">status</span> <span class="k">=</span> <span class="nf">toLog</span><span class="o">(</span><span class="n">text</span><span class="o">).</span><span class="py">status</span>
+    <span class="nv">state</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="n">status</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
+      <span class="k">case</span> <span class="nc">Some</span><span class="o">(</span><span class="n">count</span><span class="o">)</span> <span class="k">=&gt;</span>
+        <span class="k">val</span> <span class="nv">newState</span> <span class="k">=</span> <span class="n">state</span> <span class="o">+</span> <span class="o">(</span><span class="n">status</span> <span class="o">-&gt;</span> <span class="o">(</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="o">))</span>
+        <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">process</span><span class="o">(</span><span class="n">newState</span><span class="o">))</span>
+      <span class="k">case</span> <span class="nc">None</span> <span class="k">=&gt;</span>
+        <span class="k">val</span> <span class="nv">newState</span> <span class="k">=</span> <span class="n">state</span> <span class="o">+</span> <span class="o">(</span><span class="n">status</span> <span class="o">-&gt;</span> <span class="mi">1</span><span class="o">)</span>
+        <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">process</span><span class="o">(</span><span class="n">newState</span><span class="o">))</span>
+    <span class="o">}</span>
+
+  <span class="k">case</span> <span class="nc">ResultRequest</span> <span class="k">=&gt;</span>
+    <span class="nf">sender</span><span class="o">()</span> <span class="o">!</span> <span class="nc">ResultResponse</span><span class="o">(</span><span class="n">id</span><span class="o">,</span> <span class="n">state</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Result of removing mutable state is an even cleaner and simpler actor.</p>
 
 <h2 id="master-actor">Master Actor</h2>
 
@@ -488,7 +510,27 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Here you can see that we introduced <em>results</em> which is a collection of all received messages from workers. When all results are collected from workers, we will transform responses to the final result and pass it to the parent(<em>Ingestion Actor</em>).</p>
+<p>Here you can see that we introduced <em>results</em> which is a collection of all received messages from workers. When all results are collected from workers, we will transform responses to the final result and pass it to the parent(<em>Ingestion Actor</em>), but it’s better to pass this <em>results</em> via behaviour, like we did it in <em>Worker Actor</em>.  The first step is to change how <em>forwardTask</em> handles <em>CollectResults</em>:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">case</span> <span class="nc">CollectResults</span> <span class="k">=&gt;</span> <span class="o">{</span>
+  <span class="nv">workers</span><span class="o">.</span><span class="py">foreach</span><span class="o">(</span><span class="k">_</span> <span class="o">!</span> <span class="nv">Worker</span><span class="o">.</span><span class="py">ResultRequest</span><span class="o">)</span>
+  <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">collectResults</span><span class="o">(</span><span class="nv">Seq</span><span class="o">.</span><span class="py">empty</span><span class="o">))</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Finally, we need to do some modifications in “collectResults” behaviour.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">collectResults</span><span class="o">(</span><span class="n">agg</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">ResultResponse</span><span class="o">])</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="n">res</span> <span class="k">@</span> <span class="nc">ResultResponse</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">if</span> <span class="nv">agg</span><span class="o">.</span><span class="py">length</span> <span class="o">==</span> <span class="o">(</span><span class="n">nWorkers</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="k">=&gt;</span>
+    <span class="nv">context</span><span class="o">.</span><span class="py">parent</span> <span class="o">!</span> <span class="nf">toAggregate</span><span class="o">(</span><span class="n">agg</span> <span class="o">+:</span> <span class="n">results</span><span class="o">)</span>
+  <span class="k">case</span> <span class="n">res</span> <span class="k">@</span> <span class="nc">ResultResponse</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">=&gt;</span>
+    <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">collectResults</span><span class="o">(</span><span class="n">agg</span> <span class="o">+:</span> <span class="n">results</span><span class="o">))</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>I first introduced variables, because for most people at first, it’s hard to pass the state via behaviour. It will take some time till you get used to it, I also had a problem to fully understand this pattern.</p>
+
+<p>Let’s review the rest of the <em>Master Actors</em> code:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MasterHandler</span> <span class="o">{</span>
   <span class="k">def</span> <span class="nf">toAggregate</span><span class="o">(</span><span class="n">results</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">Worker.ResultResponse</span><span class="o">])</span><span class="k">:</span> <span class="kt">Aggregate</span> <span class="o">=</span> <span class="o">{</span>
@@ -513,8 +555,6 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
  <span class="k">with</span> <span class="nc">MasterHandler</span> <span class="o">{</span>
   <span class="k">import</span> <span class="nn">Master._</span>
 
-  <span class="k">val</span> <span class="nv">results</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ArrayBuffer</span><span class="o">[</span><span class="kt">Worker.ResultResponse</span><span class="o">]()</span>
-
   <span class="k">override</span> <span class="k">def</span> <span class="nf">receive</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
     <span class="k">case</span> <span class="nc">Initialize</span> <span class="k">=&gt;</span>
       <span class="nv">log</span><span class="o">.</span><span class="py">info</span><span class="o">(</span><span class="n">s</span><span class="s">"Spawning $nWorkers workers..."</span><span class="o">)</span>
@@ -532,15 +572,14 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
       <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">forwardTask</span><span class="o">(</span><span class="n">workers</span><span class="o">,</span> <span class="n">nextWorker</span><span class="o">))</span>
     <span class="k">case</span> <span class="nc">CollectResults</span> <span class="k">=&gt;</span>
       <span class="nv">workers</span><span class="o">.</span><span class="py">foreach</span><span class="o">(</span><span class="k">_</span> <span class="o">!</span> <span class="nv">Worker</span><span class="o">.</span><span class="py">ResultRequest</span><span class="o">)</span>
-      <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">collectResults</span><span class="o">())</span>
+      <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">collectResults</span><span class="o">(</span><span class="nv">Seq</span><span class="o">.</span><span class="py">empty</span><span class="o">))</span>
   <span class="o">}</span>
 
-  <span class="k">def</span> <span class="nf">collectResults</span><span class="o">()</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="k">case</span> <span class="n">response</span> <span class="k">@</span> <span class="nv">Worker</span><span class="o">.</span><span class="py">ResultResponse</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">=&gt;</span>
-      <span class="n">results</span> <span class="o">+=</span> <span class="n">response</span>
-      <span class="nf">if</span> <span class="o">(</span><span class="nv">results</span><span class="o">.</span><span class="py">length</span> <span class="o">==</span> <span class="n">nWorkers</span><span class="o">)</span> <span class="o">{</span>
-        <span class="nv">context</span><span class="o">.</span><span class="py">parent</span> <span class="o">!</span> <span class="nf">toAggregate</span><span class="o">(</span><span class="nv">results</span><span class="o">.</span><span class="py">toSeq</span><span class="o">)</span>
-      <span class="o">}</span>
+  <span class="k">def</span> <span class="nf">collectResults</span><span class="o">(</span><span class="n">agg</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">ResultResponse</span><span class="o">])</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="n">res</span> <span class="k">@</span> <span class="nc">ResultResponse</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">if</span> <span class="nv">agg</span><span class="o">.</span><span class="py">length</span> <span class="o">==</span> <span class="o">(</span><span class="n">nWorkers</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="k">=&gt;</span>
+      <span class="nv">context</span><span class="o">.</span><span class="py">parent</span> <span class="o">!</span> <span class="nf">toAggregate</span><span class="o">(</span><span class="n">agg</span> <span class="o">+:</span> <span class="n">results</span><span class="o">)</span>
+    <span class="k">case</span> <span class="n">res</span> <span class="k">@</span> <span class="nc">ResultResponse</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">=&gt;</span>
+      <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">collectResults</span><span class="o">(</span><span class="n">agg</span> <span class="o">+:</span> <span class="n">results</span><span class="o">))</span>
   <span class="o">}</span>
 
   <span class="k">def</span> <span class="nf">createWorker</span><span class="o">(</span><span class="n">index</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">ActorRef</span> <span class="o">=</span>
