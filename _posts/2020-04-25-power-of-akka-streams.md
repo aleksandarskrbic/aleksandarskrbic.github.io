@@ -13,7 +13,7 @@ In the [first]({% post_url 2020-04-04-akka-actors-1 %}) and the [second]({% post
 
 Actors are the core of [Akka toolkit](https://akka.io/) and they can't be replaced, but every module in Akka toolkit is backed by actors. The purpose of these modules is to help engineers to abstract over low-level actor based code and focus on business logic. The result of using these modules is boilerplate free code, which is also less error-prone. In this article, the same example will be used to show how [Akka Actors](https://doc.akka.io/docs/akka/current/typed/index.html?_ga=2.208848017.2007999245.1587396807-1520704188.1583745843) can be replaced with a few lines of [Akka Streams](https://doc.akka.io/docs/akka/current/stream/index.html) code. Check [all modules](https://akka.io/docs/) provided by Akka.
 
-The tasks like moving and transferring data can be implemented with actors, but it demands a lot of code, to implement necessary mechanisms for stream processing workloads like back-pressure, buffering and transforming data or error-recovery. So, for designing stream processing topologies with built-in back-pressure, Akka Streams should be considered.
+The tasks like moving and transferring data can be implemented with actors, but it demands a lot of code, to implement necessary mechanisms for stream processing workloads like back-pressure, buffering, and transforming data or error-recovery. So, for designing stream processing topologies with built-in back-pressure, Akka Streams should be considered.
 
 ## Basic terminology
 
@@ -44,7 +44,7 @@ val filter      = Flow[String].filter(element => element.length > 3)
 ```
 Same as creating a sink, we must provide a type parameter for the input element of the flow. These flows are pretty simple and self-explanatory. The first flow removes the hash from the input element, the second transforms string to lowercase and the third filter strings based on their length.
 
-So you must be asking now, how to connect all these separate components to create stream processing topology. Pipelining all components we defined earlier, we will create a graph, or how Akka it calls **RunnableGraph**. We know that source is a starting point, the sink is the last, and flows are somewhere in the middle. Our graph represents just a description of a topology, it's completely lazy. 
+So you must be asking now, how to connect all these separate components to create stream processing topology. Pipelining all components we defined earlier, we will create a graph, or how Akka it calls **RunnableGraph**. We know that source is a starting point, the sink is the last, and flows are somewhere in the middle. Our graph represents just a description of topology, it's completely lazy. 
 
 ```scala
 val graph = source.via(removeHash).via(toLowerCase).via(filter).to(sink)
@@ -78,11 +78,11 @@ object Main extends App {
     .map(element => element.toLowerCase)
     .filter(element => element.length > 3)
     .to(Sink.foreach(element => println(element)))
-    .run()
+    .run()  
 }
 ```
 
-There is a few more trick that can be applied to implement this in an even better way.
+There are a few more tricks that can be applied to implement this in an even better way.
 
 ```scala
 Source(List("#Scala", "#akka", "#JVM", "#StReam", "#Kafka"))
@@ -100,7 +100,7 @@ To explain what back-pressure let's consider the next two cases:
 
 * *Fast source/publisher, slow sink/consumer* is a case where we really need a back-pressure mechanism. Since the consumer is unable to deal with the rate of messages sent from the producer.
 
-So the back-pressure is basically a mechanism where downstream components inform upstream components about the amout of messages that can be received and buffered.
+So the back-pressure is basically a mechanism where downstream components inform upstream components about the number of messages that can be received and buffered.
 
 Akka Streams already has a back-pressure mechanism implemented and the user of the library doesn't have to write any explicit back-pressure handling code since it's built-in into Akka Streams operators. Anyhow,  Akka provides *buffer* method with overflow strategies, if you need it.
 
@@ -108,7 +108,7 @@ Akka Streams already has a back-pressure mechanism implemented and the user of t
 
 Now when we are equipped with powerful tools we examined earlier, let's refactor data processing application from [first]({% post_url 2020-04-04-akka-actors-1 %}) and the [second]({% post_url 2020-04-11-akka-actors-2 %}) article that uses Akka Actors to use Akka Streams.
 
-As I mentioned several times *Source* is an entry point for every topology. So firstly we are going to create source from the file path.
+As I mentioned several times *Source* is an entry point for every topology. So firstly we are going to create a source from the file path.
 Akka gives us *FileIO* component which is a container of factory methods to create sinks and sources from files. Let's review *fromPath* method signature.
 
 ```scala
@@ -117,7 +117,7 @@ def fromPath(f: Path,
 ```
 
 The *path* parameter is mandatory, while for the *chunkSize* default value is provided, that represents the size of each read operation.
-Since I didn't explain *Source* in details, let's do that now. *Source* has two type parameters, the first one represents a type of element which will be emitted downstream, in this particular case, it's *ByteString*, Akka utility class which is an immutable data structure that provides a thread-safe way of working with bytes. When reading or writing to files Akka always uses this type. The second type parameter is the materialized value of the source. Materialized value is obtained when the runnable graph is executed. Since Akka Streams are asynchronous by default, it will return *Future* of *IOResult*. Scala *Future* represents a value that will be available at some point, or an exception if that value can't be computed. A *Future* starts running concurrently when you create it and returns a result at some point. In order to start a *Future* implicit *ExecutionContext* must be available, since *Future* is potentially executed on a different thread.
+Since I didn't explain *Source* in detail, let's do that now. *Source* has two type parameters, the first one represents a type of element which will be emitted downstream, in this particular case, it's *ByteString*, Akka utility class which is an immutable data structure that provides a thread-safe way of working with bytes. When reading or writing to files Akka always uses this type. The second type parameter is the materialized value of the source. Materialized value is obtained when the runnable graph is executed. Since Akka Streams are asynchronous by default, it will return *Future* of *IOResult*. Scala *Future* represents a value that will be available at some point, or an exception if that value can't be computed. A *Future* starts running concurrently when you create it and returns a result at some point. In order to start a *Future* implicit *ExecutionContext* must be available, since *Future* is potentially executed on a different thread.
 
 Since *fromPath* method reads byte chunks, and our [*weblog.csv*](https://www.kaggle.com/shawon10/web-log-dataset) should be read line by line we need to use one more Akka Streams utility method from *Framing* module. Implementation of line delimiter flow goes like this:
 
@@ -141,7 +141,7 @@ val source: Source[ByteString, Future[IOResult]] = FileIO
   .fromPath(createPath)
   .via(lineDelimiter)
 ```
-Finally, we implemented a source that will read a file line by line, but it will emit *ByteString*, and we need *String*. Luckily, *ByteString* have a method that decodes it to UTF-8 encoded String. So we need to attach some flow that will preform that decoding. Of course, it's gonna be *Flow[ByteString].map(...)*.
+Finally, we implemented a source that will read a file line by line, but it will emit *ByteString*, and we need *String*. Luckily, *ByteString* has a method that decodes it to UTF-8 encoded String. So we need to attach some flow that will preform that decoding. Of course, it's gonna be *Flow[ByteString].map(...)*.
 
 ```scala
 val source: Source[String, Future[IOResult]] = FileIO
@@ -150,7 +150,7 @@ val source: Source[String, Future[IOResult]] = FileIO
   .map(byteString => byteString.utf8String) // or .map(_.utf8String)
 ```
 
-When a source is modified to emit lines, we are ready to implement our processing logic, whom you are already familiar with. Keep every line that starts with valid ip address, extract status code from it, and count the number of occurrences of status code in a giver file.
+When a source is modified to emit lines, we are ready to implement our processing logic, whom you are already familiar with. Keep every line that starts with valid ip address, extracts status code from it, and count the number of occurrences of status code in a giver file.
 
 ```scala
 val path = Paths.get(
@@ -177,7 +177,7 @@ FileIO
 I hope you are already familiar with these helper methods since they are already implemented in the actor's version of this application.
 
 Now things can get a little bit complicated, but with a great *Akka Streams DSL*, it will look quite simple.
-In order to count occurrences of each status code in a stream, we should branch it into sub-streams based on a key, in this case it's incoming status code. Akka Streams have *groupBy* operator, that accepts a maximum number of substreams, and function that will be used to compute key for a given record. In our case, the maximum number of substreams will be 5, since we have 5 distinct status codes (we know this based on the results of actor-based application). If we set a number of maximum substreams to be more than 5, the results will be the same, the output of *groupBy* will be 5 distinct streams since we have 5 unique values of status codes. Example of using *groupBy*:
+In order to count occurrences of each status code in a stream, we should branch it into sub-streams based on a key, in this case, it's incoming status code. Akka Streams have *groupBy* operator, that accepts a maximum number of substreams, and function that will be used to compute key for a given record. In our case, the maximum number of substreams will be 5, since we have 5 distinct status codes (we know this based on the results of actor-based application). If we set a number of maximum substreams to be more than 5, the results will be the same, the output of *groupBy* will be 5 distinct streams since we have 5 unique values of status codes. Example of using *groupBy*:
 
 ```scala
 groupBy(5, identity)
@@ -185,7 +185,7 @@ groupBy(5, identity)
 Since we are partitioning stream by status code, and status code is already an element of the stream we will use *identity* function that just returns its input value.
 
 After *groupBy* we will have 5 sub-stream. To calculate the number of occurrences we need to transform incoming status codes into *key-value* pair, where the key will be status code, and value will be 1 since it's the first appearance of that key in a stream so far.
-If you are familiar with [Apache Spark](https://spark.apache.org/) you know that *reduceByKey* operator can do the job for us if we were using *PairRDD*. Unfortunately, Akka Streams doesn't have that operator, but it can be easily implemented with *reduce* operator which accepts current and next value of a sub-stream yielding the next current value. After applying *reduce* operator we should merge all sub-streams into one stream, and pass it to the sink. In our case sink will be the Scala collection of tuples, where the first element of the tuple is status code, and second one is the count of occurrences.
+If you are familiar with [Apache Spark](https://spark.apache.org/) you know that *reduceByKey* operator can do the job for us if we were using *PairRDD*. Unfortunately, Akka Streams doesn't have that operator, but it can be easily implemented with *reduce* operator which accepts current and next value of a sub-stream yielding the next current value. After applying *reduce* operator we should merge all sub-streams into one stream, and pass it to the sink. In our case sink will be the Scala collection of tuples, where the first element of the tuple is the status code, and the second one is the count of occurrences.
 
 ```scala
 val processorResult: Future[Seq[(String, Long)]] = FileIO
@@ -201,7 +201,7 @@ val processorResult: Future[Seq[(String, Long)]] = FileIO
   .runWith(Sink.seq[(String, Long)])
 ```
 
-Here is our completed stream processing topology with all connected components. A Runnable Graph is executed asynchronously, so a result of our processing is *Future* that contains collection of tuples.
+Here is our completed stream processing topology with all connected components. A Runnable Graph is executed asynchronously, so a result of our processing is *Future* that contains a collection of tuples.
 
 If *Future* is completed successfully we will sort our results and print them to the console and terminate our *ActorsSystem*. We learned that it's best practice when Akka finished its job. Otherwise, we will terminate our *ActorsSystem*, and after that terminate the currently running JVM and exits the program with status code **1** which indicates that something went wrong.
 
@@ -237,12 +237,12 @@ In this simple example, there's a source of strings that we want to transform in
 
 <img src="{{ site.url }}{{ site.baseurl }}/images/akka/async-boundary.png" class="center-image ">
 
-In this diagram, operators inside yellow box will be executed on one actor, but every other operator outside the box will be executed on another actor.
+In this diagram, operators inside the yellow box will be executed on one actor, but every other operator outside the box will be executed on another actor.
 I hope that these two examples were enough to understand what an asynchronous boundary is.
 
 Another way to introduce parallel processing into Akka Streams is to use methods *mapAsync* and *mapAsyncUnordered*.
 
-The first argument of *mapAsyc* method is the number of *Futures* that shall run in parallel in order to compute the result. Another argument is a function that accepts element and returns a *Future* of a processing result. When *Future* is completed, the result is passed downstream. Regardless of their completion time the incoming order of elements will be kept when results complete. In a case when order is not important  *mapAsycUnordered* should be used, because as soon as *Future* is completed results will be emitted downstream. This will improve performance.
+The first argument of *mapAsyc* method is the number of *Futures* that shall run in parallel in order to compute the result. Another argument is a function that accepts element and returns a *Future* of a processing result. When *Future* is completed, the result is passed downstream. Regardless of their completion time, the incoming order of elements will be kept when results complete. In a case when order is not important  *mapAsycUnordered* should be used, because as soon as *Future* is completed results will be emitted downstream. This will improve performance.
 
 Both *mapAsync* and *mapAsyncUnordered* method signatures are the same.
 
@@ -257,11 +257,11 @@ The last trick we are going to talk about is buffering. It's simplest of all we 
 def buffer(size: Int, overflowStrategy: OverflowStrategy): Repr[Out]
 ```
 
-This method accepts the maximum number of elements that should be buffered, and an *OverflowStrategy*. There is a few overflow strategies provided by Akka Streams, to read more about them check the [official documentation](https://doc.akka.io/docs/akka/current/stream/operators/Source-or-Flow/buffer.html).
+This method accepts the maximum number of elements that should be buffered, and an *OverflowStrategy*. There are a few overflow strategies provided by Akka Streams, to read more about them check the [official documentation](https://doc.akka.io/docs/akka/current/stream/operators/Source-or-Flow/buffer.html).
 
 ## Refactoring
 
-So far, a lot of Akka Streams capabilities are exposed. In this chapter the initial example will be refactored following some of the best practices.
+So far, a lot of Akka Streams capabilities are exposed. In this chapter, the initial example will be refactored following some of the best practices.
 
 ```scala
 object Application extends App with LazyLogging {

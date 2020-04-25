@@ -26,12 +26,12 @@ object Worker {
 }
 ```
 
-Here is some already familiar pattern where first is implemented actors companion object, where message protocol is defined and also factory method that returns actor wrapped in a Props class which is immutable configuration object used for creating new actors through *actors system* or *actor context*.  If something is not clear in the previous sentence I recommend reading [this page](https://doc.akka.io/docs/akka/current/actors.html) of Akka official documentation.
+Here is some already familiar pattern where the first is implemented actors companion object, where message protocol is defined and also factory method that returns actor wrapped in a Props class which is immutable configuration object used for creating new actors through *actors system* or *actor context*.  If something is not clear in the previous sentence I recommend reading [this page](https://doc.akka.io/docs/akka/current/actors.html) of Akka official documentation.
 
 Now let's talk about the message protocol. There are four defined messages:
-* **ResultRequest**  is a message that is received by *Master Actor*, when there is no data left to process, which means, as a name suggest, that worker actor should return aggregated processing results to *Master Actor*.
+* **ResultRequest**  is a message that is received by *Master Actor*, when there is no data left to process, which means, as a name suggests, that worker actor should return aggregated processing results to *Master Actor*.
 * **ResultResponse**  is, as you assumed,  a message that contains all data processed by a worker.
-* **Date** and **Log** case classes are our domain objects which are consturcted from **Line** message received by *Master Actor*.
+* **Date** and **Log** case classes are our domain objects which are constructed from **Line** message received by *Master Actor*.
 
 By now, as we are already familiar with a message flow through actors, we know that **Line** is just a wrapper class around line read from source by *Ingestion Actor* sent to *Master Actor* and finally forwarded to one of the *Worker Actors*. The goal of our application is to count the number of occurrences of HTTP status codes from file reading it line by line. So upon receiving **Line**,  *Worker Actor* should transform that to  **Log** case class. So here is an implementation of that function:
 
@@ -102,10 +102,10 @@ state.get(status) match {
 ```
 
 Here we have some pattern matching again.
-Since *Map* from Scala Collections returns *Option[T]*, we are able to pattern match against it. If there is some value we will get *Some(value)* and if value is absent we will get *None*. To learn more about *Option type* check [this](https://www.scala-lang.org/api/current/scala/Option.html).
+Since *Map* from Scala Collections returns *Option[T]*, we are able to pattern match against it. If there is some value we will get *Some(value)* and if value the is absent we will get *None*. To learn more about *Option type* check [this](https://www.scala-lang.org/api/current/scala/Option.html).
 
 And that is a full implementation of a *Worker Actors*, simple as that.
-But to improve our actor design, let's remove the state variable, and just pass it through behaviour, like this:
+But to improve our actor design, let's remove the state variable, and just pass it through behavior, like this:
 
 ```scala
 override def receive: Receive = process(Map.empty)
@@ -127,7 +127,7 @@ def process(state: Map[StatusCode, Count]): Receive = {
 }
 ```
 
-Result of removing mutable state is an even cleaner and simpler actor.
+The result of removing mutable state is an even cleaner and simpler actor.
 
 ## Master Actor
 
@@ -156,21 +156,21 @@ override def receive: Receive = {
 }
 ```
 
-*Initialize* message that is received from *Ingestion Actor* will trigger the creation of *Worker Actors*. Number of workers is defined upon creating *Master Actor*. Here is the implementation of *createWorker* method:
+*Initialize* message that is received from *Ingestion Actor* will trigger the creation of *Worker Actors*. A number of workers are defined upon creating *Master Actor*. Here is the implementation of *createWorker* method:
 
 ```scala
 def createWorker(index: Int): ActorRef = 
   context.actorOf(Worker.props(index), s"worker-$index")
 ```
 
-After workers are initialized, they are ready to start receiving tasks from their parent.
+After workers are initialized, they are ready to start receiving tasks from their parents.
 
 ```scala
 context.become(forwardTask(workers, 0))
 ```
 
 This code snippet(above) basically tells actors how to react to the next message.
-Actors *context.become* method takes a *PartialFunction[Any, Unit]* that implements the new message handler.
+Actor's *context.become* method takes a *PartialFunction[Any, Unit]* that implements the new message handler.
 
 ```scala
 type Receive = PartialFunction[Any, Unit]
@@ -192,7 +192,7 @@ def forwardTask(workers: Seq[ActorRef],
     context.become(collectResults())
 }
 ```
-In this behavior *Master Actor* react on two type of messages: *Line* and *CollectResults*.
+In this behavior *Master Actor* react on two types of messages: *Line* and *CollectResults*.
 
 When *Line* is received, we will have access to *workers* which is collection of all *Worker Actors* and *currentWorker*  which is the index of *Worker Actor* to whom the incoming message will be passed. After the message is sent to the wanted worker, we need to determine the index of the next *Worker Actor* who will need to receive the next message.
 
@@ -217,7 +217,7 @@ def collectResults(): Receive = {
 }
 ```
 
-Here you can see that we introduced *results* which is a collection of all received messages from workers. When all results are collected from workers, we will transform responses to the final result and pass it to the parent(*Ingestion Actor*), but it's better to pass this *results* via behaviour, like we did it in *Worker Actor*.  The first step is to change how *forwardTask* handles *CollectResults*:
+Here you can see that we introduced *results* which is a collection of all received messages from workers. When all results are collected from workers, we will transform responses to the final result and pass it to the parent(*Ingestion Actor*), but it's better to pass this *results* via behavior, like we did it in *Worker Actor*.  The first step is to change how *forwardTask* handles *CollectResults*:
 
 ```scala
 case CollectResults => {
@@ -226,7 +226,7 @@ case CollectResults => {
 }
 ```
 
-Finally, we need to do some modifications in "collectResults" behaviour.
+Finally, we need to do some modifications to "collectResults" behavior.
 
 ```scala
 def collectResults(agg: Seq[ResultResponse]): Receive = {
@@ -237,7 +237,7 @@ def collectResults(agg: Seq[ResultResponse]): Receive = {
 }
 ```
 
-I first introduced variables, because for most people at first, it's hard to pass the state via behaviour. It will take some time till you get used to it, I also had a problem to fully understand this pattern.
+I first introduced variables, because for most people at first, it's hard to pass the state via behavior. It will take some time till you get used to it, I also had a problem to fully understand this pattern.
 
 Let's review the rest of the *Master Actors* code:
 
@@ -303,7 +303,7 @@ class Master(nWorkers: Int) extends Actor
 This is the last part of *Data processing with Akka Actors* series. Here is the source code if you want to play with it or even improve it.
 Github repository: [Data processing with Akka Actors](https://github.com/aleksandarskrbic/akka-actors-blog/tree/master/actors).
 
-You learned how to write a relatively simple application with Akka, how to design master-worker architecture and how to implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor codebase to use Typed Actors and to implement supervision strategy for actors. Check official Akka documentation on [Supervision and Monitoring](https://doc.akka.io/docs/akka/2.6/general/supervision.html) to learn more about it. Another way to improve this application will be to completely remove *Master Actor* and to use [Akka Routers](https://doc.akka.io/docs/akka/current/routing.html), that can easily help us to distribute request among workers without worrying about the implementation of algorithms like round-robin or some else, as we did here for the purpose of learning.
+You learned how to write a relatively simple application with Akka, how to design master-worker architecture, and how to implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor codebase to use Typed Actors and to implement supervision strategy for actors. Check official Akka documentation on [Supervision and Monitoring](https://doc.akka.io/docs/akka/2.6/general/supervision.html) to learn more about it. Another way to improve this application will be to completely remove *Master Actor* and to use [Akka Routers](https://doc.akka.io/docs/akka/current/routing.html), that can easily help us to distribute request among workers without worrying about the implementation of algorithms like round-robin or some else, as we did here for the purpose of learning.
 
 Some of these improvements will be a theme for another article.
 
