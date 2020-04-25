@@ -1,6 +1,14 @@
 [
   
     {
+      "title"    : "The Power of Akka Streams",
+      "category" : "",
+      "tags"     : "scala, akka, jvm, big data, akka streams",
+      "url"      : "/power-of-akka-streams/",
+      "date"     : "2020-04-25 00:00:00 +0200"
+    } ,
+  
+    {
       "title"    : "Data processing with Akka Actors: Part II",
       "category" : "",
       "tags"     : "scala, akka, jvm, big data",

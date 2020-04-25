@@ -301,7 +301,7 @@ class Master(nWorkers: Int) extends Actor
 ## Summary
 
 This is the last part of *Data processing with Akka Actors* series. Here is the source code if you want to play with it or even improve it.
-Github repository: [Data processing with Akka Actors](https://github.com/aleksandarskrbic/akka-actors-blog).
+Github repository: [Data processing with Akka Actors](https://github.com/aleksandarskrbic/akka-actors-blog/tree/master/actors).
 
 You learned how to write a relatively simple application with Akka, how to design master-worker architecture and how to implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor codebase to use Typed Actors and to implement supervision strategy for actors. Check official Akka documentation on [Supervision and Monitoring](https://doc.akka.io/docs/akka/2.6/general/supervision.html) to learn more about it. Another way to improve this application will be to completely remove *Master Actor* and to use [Akka Routers](https://doc.akka.io/docs/akka/current/routing.html), that can easily help us to distribute request among workers without worrying about the implementation of algorithms like round-robin or some else, as we did here for the purpose of learning.
 
