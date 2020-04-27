@@ -66,7 +66,7 @@ implicit val materialzier = ActorMaterializer()
 
 Since Akka 2.6 version there is no need for *ActorMaterilzer* because a default materializer is now provided out of the box if implicit *ActorSystem* is available.
 
-Akka Streams API provides us a builder pattern syntax to chain source, flow, and sink components in order to create a graph. IMHO it's better to use it than creating separate components and then connectin them. Our stream processing app can be rewritten to look like this:
+Akka Streams API provides us a builder pattern syntax to chain source, flow, and sink components in order to create a graph. IMHO it's better to use it than creating separate components and then connecting them. Our stream processing app can be rewritten to look like this:
 
 ```scala
 object Main extends App {
