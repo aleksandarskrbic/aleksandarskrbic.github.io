@@ -13,4 +13,9 @@ var store = [{
         "excerpt":"In the first and the second part of the Data processing with Akka Actors series, I introduced how to design actors based application. The example that I presented is a way to simple and using actors to solve that is obliviously an overkill, but I think it’s a representative enough...","categories": [],
         "tags": ["scala","akka","jvm","big data","akka streams"],
         "url": "http://localhost:4000/power-of-akka-streams/",
+        "teaser":null},{
+        "title": "A Taste of Functional Java",
+        "excerpt":"There are a lot of different definitions of what functional programming is. For people new to it, it’s can be really hard to understand what it actually is, since there are a lot of materials related to it, but rarely you will find one that will clearly present basics and...","categories": [],
+        "tags": ["java","jvm","fp"],
+        "url": "http://localhost:4000/a-taste-of-functional-java/",
         "teaser":null}]

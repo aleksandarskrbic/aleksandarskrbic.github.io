@@ -318,7 +318,7 @@
 
 <p>Actors are the core of <a href="https://akka.io/">Akka toolkit</a> and they can’t be replaced, but every module in Akka toolkit is backed by actors. The purpose of these modules is to help engineers to abstract over low-level actor based code and focus on business logic. The result of using these modules is boilerplate free code, which is also less error-prone. In this article, the same example will be used to show how <a href="https://doc.akka.io/docs/akka/current/typed/index.html?_ga=2.208848017.2007999245.1587396807-1520704188.1583745843">Akka Actors</a> can be replaced with a few lines of <a href="https://doc.akka.io/docs/akka/current/stream/index.html">Akka Streams</a> code. Check <a href="https://akka.io/docs/">all modules</a> provided by Akka.</p>
 
-<p>The tasks like moving and transferring data can be implemented with actors, but it demands a lot of code, to implement necessary mechanisms for stream processing workloads like back-pressure, buffering and transforming data or error-recovery. So, for designing stream processing topologies with built-in back-pressure, Akka Streams should be considered.</p>
+<p>The tasks like moving and transferring data can be implemented with actors, but it demands a lot of code, to implement necessary mechanisms for stream processing workloads like back-pressure, buffering, and transforming data or error-recovery. So, for designing stream processing topologies with built-in back-pressure, Akka Streams should be considered.</p>
 
 <h2 id="basic-terminology">Basic terminology</h2>
 
@@ -352,7 +352,7 @@
 </code></pre></div></div>
 <p>Same as creating a sink, we must provide a type parameter for the input element of the flow. These flows are pretty simple and self-explanatory. The first flow removes the hash from the input element, the second transforms string to lowercase and the third filter strings based on their length.</p>
 
-<p>So you must be asking now, how to connect all these separate components to create stream processing topology. Pipelining all components we defined earlier, we will create a graph, or how Akka it calls <strong>RunnableGraph</strong>. We know that source is a starting point, the sink is the last, and flows are somewhere in the middle. Our graph represents just a description of a topology, it’s completely lazy.</p>
+<p>So you must be asking now, how to connect all these separate components to create stream processing topology. Pipelining all components we defined earlier, we will create a graph, or how Akka it calls <strong>RunnableGraph</strong>. We know that source is a starting point, the sink is the last, and flows are somewhere in the middle. Our graph represents just a description of topology, it’s completely lazy.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">graph</span> <span class="k">=</span> <span class="nv">source</span><span class="o">.</span><span class="py">via</span><span class="o">(</span><span class="n">removeHash</span><span class="o">).</span><span class="py">via</span><span class="o">(</span><span class="n">toLowerCase</span><span class="o">).</span><span class="py">via</span><span class="o">(</span><span class="n">filter</span><span class="o">).</span><span class="py">to</span><span class="o">(</span><span class="n">sink</span><span class="o">)</span>
 </code></pre></div></div>
@@ -371,7 +371,7 @@
 
 <p>Since Akka 2.6 version there is no need for <em>ActorMaterilzer</em> because a default materializer is now provided out of the box if implicit <em>ActorSystem</em> is available.</p>
 
-<p>Akka Streams API provides us a builder pattern syntax to chain source, flow, and sink components in order to create a graph. IMHO it’s better to use it than creating separate components and then connectin them. Our stream processing app can be rewritten to look like this:</p>
+<p>Akka Streams API provides us a builder pattern syntax to chain source, flow, and sink components in order to create a graph. IMHO it’s better to use it than creating separate components and then connecting them. Our stream processing app can be rewritten to look like this:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Main</span> <span class="k">extends</span> <span class="nc">App</span> <span class="o">{</span>
 
@@ -382,11 +382,11 @@
     <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">element</span> <span class="k">=&gt;</span> <span class="nv">element</span><span class="o">.</span><span class="py">toLowerCase</span><span class="o">)</span>
     <span class="o">.</span><span class="py">filter</span><span class="o">(</span><span class="n">element</span> <span class="k">=&gt;</span> <span class="nv">element</span><span class="o">.</span><span class="py">length</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="o">)</span>
     <span class="o">.</span><span class="py">to</span><span class="o">(</span><span class="nv">Sink</span><span class="o">.</span><span class="py">foreach</span><span class="o">(</span><span class="n">element</span> <span class="k">=&gt;</span> <span class="nf">println</span><span class="o">(</span><span class="n">element</span><span class="o">)))</span>
-    <span class="o">.</span><span class="py">run</span><span class="o">()</span>
+    <span class="o">.</span><span class="py">run</span><span class="o">()</span>  
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>There is a few more trick that can be applied to implement this in an even better way.</p>
+<p>There are a few more tricks that can be applied to implement this in an even better way.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Source</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">"#Scala"</span><span class="o">,</span> <span class="s">"#akka"</span><span class="o">,</span> <span class="s">"#JVM"</span><span class="o">,</span> <span class="s">"#StReam"</span><span class="o">,</span> <span class="s">"#Kafka"</span><span class="o">))</span>
   <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="nv">_</span><span class="o">.</span><span class="py">substring</span><span class="o">(</span><span class="mi">1</span><span class="o">))</span>
@@ -408,7 +408,7 @@
   </li>
 </ul>
 
-<p>So the back-pressure is basically a mechanism where downstream components inform upstream components about the amout of messages that can be received and buffered.</p>
+<p>So the back-pressure is basically a mechanism where downstream components inform upstream components about the number of messages that can be received and buffered.</p>
 
 <p>Akka Streams already has a back-pressure mechanism implemented and the user of the library doesn’t have to write any explicit back-pressure handling code since it’s built-in into Akka Streams operators. Anyhow,  Akka provides <em>buffer</em> method with overflow strategies, if you need it.</p>
 
@@ -416,7 +416,7 @@
 
 <p>Now when we are equipped with powerful tools we examined earlier, let’s refactor data processing application from <a href="/akka-actors-1/">first</a> and the <a href="/akka-actors-2/">second</a> article that uses Akka Actors to use Akka Streams.</p>
 
-<p>As I mentioned several times <em>Source</em> is an entry point for every topology. So firstly we are going to create source from the file path.
+<p>As I mentioned several times <em>Source</em> is an entry point for every topology. So firstly we are going to create a source from the file path.
 Akka gives us <em>FileIO</em> component which is a container of factory methods to create sinks and sources from files. Let’s review <em>fromPath</em> method signature.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">fromPath</span><span class="o">(</span><span class="n">f</span><span class="k">:</span> <span class="kt">Path</span><span class="o">,</span>
@@ -424,7 +424,7 @@ Akka gives us <em>FileIO</em> component which is a container of factory methods 
 </code></pre></div></div>
 
 <p>The <em>path</em> parameter is mandatory, while for the <em>chunkSize</em> default value is provided, that represents the size of each read operation.
-Since I didn’t explain <em>Source</em> in details, let’s do that now. <em>Source</em> has two type parameters, the first one represents a type of element which will be emitted downstream, in this particular case, it’s <em>ByteString</em>, Akka utility class which is an immutable data structure that provides a thread-safe way of working with bytes. When reading or writing to files Akka always uses this type. The second type parameter is the materialized value of the source. Materialized value is obtained when the runnable graph is executed. Since Akka Streams are asynchronous by default, it will return <em>Future</em> of <em>IOResult</em>. Scala <em>Future</em> represents a value that will be available at some point, or an exception if that value can’t be computed. A <em>Future</em> starts running concurrently when you create it and returns a result at some point. In order to start a <em>Future</em> implicit <em>ExecutionContext</em> must be available, since <em>Future</em> is potentially executed on a different thread.</p>
+Since I didn’t explain <em>Source</em> in detail, let’s do that now. <em>Source</em> has two type parameters, the first one represents a type of element which will be emitted downstream, in this particular case, it’s <em>ByteString</em>, Akka utility class which is an immutable data structure that provides a thread-safe way of working with bytes. When reading or writing to files Akka always uses this type. The second type parameter is the materialized value of the source. Materialized value is obtained when the runnable graph is executed. Since Akka Streams are asynchronous by default, it will return <em>Future</em> of <em>IOResult</em>. Scala <em>Future</em> represents a value that will be available at some point, or an exception if that value can’t be computed. A <em>Future</em> starts running concurrently when you create it and returns a result at some point. In order to start a <em>Future</em> implicit <em>ExecutionContext</em> must be available, since <em>Future</em> is potentially executed on a different thread.</p>
 
 <p>Since <em>fromPath</em> method reads byte chunks, and our <a href="https://www.kaggle.com/shawon10/web-log-dataset"><em>weblog.csv</em></a> should be read line by line we need to use one more Akka Streams utility method from <em>Framing</em> module. Implementation of line delimiter flow goes like this:</p>
 
@@ -446,7 +446,7 @@ Since I didn’t explain <em>Source</em> in details, let’s do that now. <em>So
   <span class="o">.</span><span class="py">fromPath</span><span class="o">(</span><span class="n">createPath</span><span class="o">)</span>
   <span class="o">.</span><span class="py">via</span><span class="o">(</span><span class="n">lineDelimiter</span><span class="o">)</span>
 </code></pre></div></div>
-<p>Finally, we implemented a source that will read a file line by line, but it will emit <em>ByteString</em>, and we need <em>String</em>. Luckily, <em>ByteString</em> have a method that decodes it to UTF-8 encoded String. So we need to attach some flow that will preform that decoding. Of course, it’s gonna be <em>Flow[ByteString].map(…)</em>.</p>
+<p>Finally, we implemented a source that will read a file line by line, but it will emit <em>ByteString</em>, and we need <em>String</em>. Luckily, <em>ByteString</em> has a method that decodes it to UTF-8 encoded String. So we need to attach some flow that will preform that decoding. Of course, it’s gonna be <em>Flow[ByteString].map(…)</em>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">source</span><span class="k">:</span> <span class="kt">Source</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Future</span><span class="o">[</span><span class="kt">IOResult</span><span class="o">]]</span> <span class="k">=</span> <span class="nc">FileIO</span>
   <span class="o">.</span><span class="py">fromPath</span><span class="o">(</span><span class="n">createPath</span><span class="o">)</span>
@@ -454,7 +454,7 @@ Since I didn’t explain <em>Source</em> in details, let’s do that now. <em>So
   <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">byteString</span> <span class="k">=&gt;</span> <span class="nv">byteString</span><span class="o">.</span><span class="py">utf8String</span><span class="o">)</span> <span class="c1">// or .map(_.utf8String)
 </span></code></pre></div></div>
 
-<p>When a source is modified to emit lines, we are ready to implement our processing logic, whom you are already familiar with. Keep every line that starts with valid ip address, extract status code from it, and count the number of occurrences of status code in a giver file.</p>
+<p>When a source is modified to emit lines, we are ready to implement our processing logic, whom you are already familiar with. Keep every line that starts with valid ip address, extracts status code from it, and count the number of occurrences of status code in a giver file.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">path</span> <span class="k">=</span> <span class="nv">Paths</span><span class="o">.</span><span class="py">get</span><span class="o">(</span>
     <span class="nv">getClass</span><span class="o">.</span><span class="py">getClassLoader</span><span class="o">.</span><span class="py">getResource</span><span class="o">(</span><span class="s">"data/weblog.csv"</span><span class="o">).</span><span class="py">getPath</span>
@@ -480,14 +480,14 @@ Since I didn’t explain <em>Source</em> in details, let’s do that now. <em>So
 <p>I hope you are already familiar with these helper methods since they are already implemented in the actor’s version of this application.</p>
 
 <p>Now things can get a little bit complicated, but with a great <em>Akka Streams DSL</em>, it will look quite simple.
-In order to count occurrences of each status code in a stream, we should branch it into sub-streams based on a key, in this case it’s incoming status code. Akka Streams have <em>groupBy</em> operator, that accepts a maximum number of substreams, and function that will be used to compute key for a given record. In our case, the maximum number of substreams will be 5, since we have 5 distinct status codes (we know this based on the results of actor-based application). If we set a number of maximum substreams to be more than 5, the results will be the same, the output of <em>groupBy</em> will be 5 distinct streams since we have 5 unique values of status codes. Example of using <em>groupBy</em>:</p>
+In order to count occurrences of each status code in a stream, we should branch it into sub-streams based on a key, in this case, it’s incoming status code. Akka Streams have <em>groupBy</em> operator, that accepts a maximum number of substreams, and function that will be used to compute key for a given record. In our case, the maximum number of substreams will be 5, since we have 5 distinct status codes (we know this based on the results of actor-based application). If we set a number of maximum substreams to be more than 5, the results will be the same, the output of <em>groupBy</em> will be 5 distinct streams since we have 5 unique values of status codes. Example of using <em>groupBy</em>:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">groupBy</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="n">identity</span><span class="o">)</span>
 </code></pre></div></div>
 <p>Since we are partitioning stream by status code, and status code is already an element of the stream we will use <em>identity</em> function that just returns its input value.</p>
 
 <p>After <em>groupBy</em> we will have 5 sub-stream. To calculate the number of occurrences we need to transform incoming status codes into <em>key-value</em> pair, where the key will be status code, and value will be 1 since it’s the first appearance of that key in a stream so far.
-If you are familiar with <a href="https://spark.apache.org/">Apache Spark</a> you know that <em>reduceByKey</em> operator can do the job for us if we were using <em>PairRDD</em>. Unfortunately, Akka Streams doesn’t have that operator, but it can be easily implemented with <em>reduce</em> operator which accepts current and next value of a sub-stream yielding the next current value. After applying <em>reduce</em> operator we should merge all sub-streams into one stream, and pass it to the sink. In our case sink will be the Scala collection of tuples, where the first element of the tuple is status code, and second one is the count of occurrences.</p>
+If you are familiar with <a href="https://spark.apache.org/">Apache Spark</a> you know that <em>reduceByKey</em> operator can do the job for us if we were using <em>PairRDD</em>. Unfortunately, Akka Streams doesn’t have that operator, but it can be easily implemented with <em>reduce</em> operator which accepts current and next value of a sub-stream yielding the next current value. After applying <em>reduce</em> operator we should merge all sub-streams into one stream, and pass it to the sink. In our case sink will be the Scala collection of tuples, where the first element of the tuple is the status code, and the second one is the count of occurrences.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">processorResult</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[(</span><span class="kt">String</span>, <span class="kt">Long</span><span class="o">)]]</span> <span class="k">=</span> <span class="nc">FileIO</span>
   <span class="o">.</span><span class="py">fromPath</span><span class="o">(</span><span class="n">createPath</span><span class="o">)</span>
@@ -502,7 +502,7 @@ If you are familiar with <a href="https://spark.apache.org/">Apache Spark</a> yo
   <span class="o">.</span><span class="py">runWith</span><span class="o">(</span><span class="nv">Sink</span><span class="o">.</span><span class="py">seq</span><span class="o">[(</span><span class="kt">String</span>, <span class="kt">Long</span><span class="o">)])</span>
 </code></pre></div></div>
 
-<p>Here is our completed stream processing topology with all connected components. A Runnable Graph is executed asynchronously, so a result of our processing is <em>Future</em> that contains collection of tuples.</p>
+<p>Here is our completed stream processing topology with all connected components. A Runnable Graph is executed asynchronously, so a result of our processing is <em>Future</em> that contains a collection of tuples.</p>
 
 <p>If <em>Future</em> is completed successfully we will sort our results and print them to the console and terminate our <em>ActorsSystem</em>. We learned that it’s best practice when Akka finished its job. Otherwise, we will terminate our <em>ActorsSystem</em>, and after that terminate the currently running JVM and exits the program with status code <strong>1</strong> which indicates that something went wrong.</p>
 
@@ -536,12 +536,12 @@ If you are familiar with <a href="https://spark.apache.org/">Apache Spark</a> yo
 
 <p><img src="http://localhost:4000/images/akka/async-boundary.png" class="center-image " /></p>
 
-<p>In this diagram, operators inside yellow box will be executed on one actor, but every other operator outside the box will be executed on another actor.
+<p>In this diagram, operators inside the yellow box will be executed on one actor, but every other operator outside the box will be executed on another actor.
 I hope that these two examples were enough to understand what an asynchronous boundary is.</p>
 
 <p>Another way to introduce parallel processing into Akka Streams is to use methods <em>mapAsync</em> and <em>mapAsyncUnordered</em>.</p>
 
-<p>The first argument of <em>mapAsyc</em> method is the number of <em>Futures</em> that shall run in parallel in order to compute the result. Another argument is a function that accepts element and returns a <em>Future</em> of a processing result. When <em>Future</em> is completed, the result is passed downstream. Regardless of their completion time the incoming order of elements will be kept when results complete. In a case when order is not important  <em>mapAsycUnordered</em> should be used, because as soon as <em>Future</em> is completed results will be emitted downstream. This will improve performance.</p>
+<p>The first argument of <em>mapAsyc</em> method is the number of <em>Futures</em> that shall run in parallel in order to compute the result. Another argument is a function that accepts element and returns a <em>Future</em> of a processing result. When <em>Future</em> is completed, the result is passed downstream. Regardless of their completion time, the incoming order of elements will be kept when results complete. In a case when order is not important  <em>mapAsycUnordered</em> should be used, because as soon as <em>Future</em> is completed results will be emitted downstream. This will improve performance.</p>
 
 <p>Both <em>mapAsync</em> and <em>mapAsyncUnordered</em> method signatures are the same.</p>
 
@@ -554,11 +554,11 @@ I hope that these two examples were enough to understand what an asynchronous bo
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">buffer</span><span class="o">(</span><span class="n">size</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">overflowStrategy</span><span class="k">:</span> <span class="kt">OverflowStrategy</span><span class="o">)</span><span class="k">:</span> <span class="kt">Repr</span><span class="o">[</span><span class="kt">Out</span><span class="o">]</span>
 </code></pre></div></div>
 
-<p>This method accepts the maximum number of elements that should be buffered, and an <em>OverflowStrategy</em>. There is a few overflow strategies provided by Akka Streams, to read more about them check the <a href="https://doc.akka.io/docs/akka/current/stream/operators/Source-or-Flow/buffer.html">official documentation</a>.</p>
+<p>This method accepts the maximum number of elements that should be buffered, and an <em>OverflowStrategy</em>. There are a few overflow strategies provided by Akka Streams, to read more about them check the <a href="https://doc.akka.io/docs/akka/current/stream/operators/Source-or-Flow/buffer.html">official documentation</a>.</p>
 
 <h2 id="refactoring">Refactoring</h2>
 
-<p>So far, a lot of Akka Streams capabilities are exposed. In this chapter the initial example will be refactored following some of the best practices.</p>
+<p>So far, a lot of Akka Streams capabilities are exposed. In this chapter, the initial example will be refactored following some of the best practices.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Application</span> <span class="k">extends</span> <span class="nc">App</span> <span class="k">with</span> <span class="nc">LazyLogging</span> <span class="o">{</span>
 
@@ -712,7 +712,8 @@ I hope that these two examples were enough to understand what an asynchronous bo
 ">Previous</a>
     
     
-      <a href="#" class="pagination--pager disabled">Next</a>
+      <a href="http://localhost:4000/a-taste-of-functional-java/" class="pagination--pager" title="A Taste of Functional Java
+">Next</a>
     
   </nav>
 
@@ -726,6 +727,33 @@ I hope that these two examples were enough to understand what an asynchronous bo
     <div class="page__related">
       <h4 class="page__related-title">You May Also Enjoy</h4>
       <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title" itemprop="headline">
+      
+        <a href="http://localhost:4000/a-taste-of-functional-java/" rel="permalink">A Taste of Functional Java
+</a>
+      
+    </h2>
+    
+      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  19 minute read
+</p>
+    
+    <p class="archive__item-excerpt" itemprop="description">Java, JVM, Functional Programming
+</p>
+  </article>
+</div>
         
           
 

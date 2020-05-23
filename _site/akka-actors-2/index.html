@@ -330,13 +330,13 @@
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Here is some already familiar pattern where first is implemented actors companion object, where message protocol is defined and also factory method that returns actor wrapped in a Props class which is immutable configuration object used for creating new actors through <em>actors system</em> or <em>actor context</em>.  If something is not clear in the previous sentence I recommend reading <a href="https://doc.akka.io/docs/akka/current/actors.html">this page</a> of Akka official documentation.</p>
+<p>Here is some already familiar pattern where the first is implemented actors companion object, where message protocol is defined and also factory method that returns actor wrapped in a Props class which is immutable configuration object used for creating new actors through <em>actors system</em> or <em>actor context</em>.  If something is not clear in the previous sentence I recommend reading <a href="https://doc.akka.io/docs/akka/current/actors.html">this page</a> of Akka official documentation.</p>
 
 <p>Now let’s talk about the message protocol. There are four defined messages:</p>
 <ul>
-  <li><strong>ResultRequest</strong>  is a message that is received by <em>Master Actor</em>, when there is no data left to process, which means, as a name suggest, that worker actor should return aggregated processing results to <em>Master Actor</em>.</li>
+  <li><strong>ResultRequest</strong>  is a message that is received by <em>Master Actor</em>, when there is no data left to process, which means, as a name suggests, that worker actor should return aggregated processing results to <em>Master Actor</em>.</li>
   <li><strong>ResultResponse</strong>  is, as you assumed,  a message that contains all data processed by a worker.</li>
-  <li><strong>Date</strong> and <strong>Log</strong> case classes are our domain objects which are consturcted from <strong>Line</strong> message received by <em>Master Actor</em>.</li>
+  <li><strong>Date</strong> and <strong>Log</strong> case classes are our domain objects which are constructed from <strong>Line</strong> message received by <em>Master Actor</em>.</li>
 </ul>
 
 <p>By now, as we are already familiar with a message flow through actors, we know that <strong>Line</strong> is just a wrapper class around line read from source by <em>Ingestion Actor</em> sent to <em>Master Actor</em> and finally forwarded to one of the <em>Worker Actors</em>. The goal of our application is to count the number of occurrences of HTTP status codes from file reading it line by line. So upon receiving <strong>Line</strong>,  <em>Worker Actor</em> should transform that to  <strong>Log</strong> case class. So here is an implementation of that function:</p>
@@ -404,10 +404,10 @@
 </code></pre></div></div>
 
 <p>Here we have some pattern matching again.
-Since <em>Map</em> from Scala Collections returns <em>Option[T]</em>, we are able to pattern match against it. If there is some value we will get <em>Some(value)</em> and if value is absent we will get <em>None</em>. To learn more about <em>Option type</em> check <a href="https://www.scala-lang.org/api/current/scala/Option.html">this</a>.</p>
+Since <em>Map</em> from Scala Collections returns <em>Option[T]</em>, we are able to pattern match against it. If there is some value we will get <em>Some(value)</em> and if value the is absent we will get <em>None</em>. To learn more about <em>Option type</em> check <a href="https://www.scala-lang.org/api/current/scala/Option.html">this</a>.</p>
 
 <p>And that is a full implementation of a <em>Worker Actors</em>, simple as that.
-But to improve our actor design, let’s remove the state variable, and just pass it through behaviour, like this:</p>
+But to improve our actor design, let’s remove the state variable, and just pass it through behavior, like this:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">override</span> <span class="k">def</span> <span class="nf">receive</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="nf">process</span><span class="o">(</span><span class="nv">Map</span><span class="o">.</span><span class="py">empty</span><span class="o">)</span>
 
@@ -428,7 +428,7 @@ But to improve our actor design, let’s remove the state variable, and just pas
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Result of removing mutable state is an even cleaner and simpler actor.</p>
+<p>The result of removing mutable state is an even cleaner and simpler actor.</p>
 
 <h2 id="master-actor">Master Actor</h2>
 
@@ -455,19 +455,19 @@ But to improve our actor design, let’s remove the state variable, and just pas
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p><em>Initialize</em> message that is received from <em>Ingestion Actor</em> will trigger the creation of <em>Worker Actors</em>. Number of workers is defined upon creating <em>Master Actor</em>. Here is the implementation of <em>createWorker</em> method:</p>
+<p><em>Initialize</em> message that is received from <em>Ingestion Actor</em> will trigger the creation of <em>Worker Actors</em>. A number of workers are defined upon creating <em>Master Actor</em>. Here is the implementation of <em>createWorker</em> method:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">createWorker</span><span class="o">(</span><span class="n">index</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">ActorRef</span> <span class="o">=</span> 
   <span class="nv">context</span><span class="o">.</span><span class="py">actorOf</span><span class="o">(</span><span class="nv">Worker</span><span class="o">.</span><span class="py">props</span><span class="o">(</span><span class="n">index</span><span class="o">),</span> <span class="n">s</span><span class="s">"worker-$index"</span><span class="o">)</span>
 </code></pre></div></div>
 
-<p>After workers are initialized, they are ready to start receiving tasks from their parent.</p>
+<p>After workers are initialized, they are ready to start receiving tasks from their parents.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">forwardTask</span><span class="o">(</span><span class="n">workers</span><span class="o">,</span> <span class="mi">0</span><span class="o">))</span>
 </code></pre></div></div>
 
 <p>This code snippet(above) basically tells actors how to react to the next message.
-Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em> that implements the new message handler.</p>
+Actor’s <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em> that implements the new message handler.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="nc">PartialFunction</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Unit</span><span class="o">]</span>
 </code></pre></div></div>
@@ -487,7 +487,7 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
     <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">collectResults</span><span class="o">())</span>
 <span class="o">}</span>
 </code></pre></div></div>
-<p>In this behavior <em>Master Actor</em> react on two type of messages: <em>Line</em> and <em>CollectResults</em>.</p>
+<p>In this behavior <em>Master Actor</em> react on two types of messages: <em>Line</em> and <em>CollectResults</em>.</p>
 
 <p>When <em>Line</em> is received, we will have access to <em>workers</em> which is collection of all <em>Worker Actors</em> and <em>currentWorker</em>  which is the index of <em>Worker Actor</em> to whom the incoming message will be passed. After the message is sent to the wanted worker, we need to determine the index of the next <em>Worker Actor</em> who will need to receive the next message.</p>
 
@@ -510,7 +510,7 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Here you can see that we introduced <em>results</em> which is a collection of all received messages from workers. When all results are collected from workers, we will transform responses to the final result and pass it to the parent(<em>Ingestion Actor</em>), but it’s better to pass this <em>results</em> via behaviour, like we did it in <em>Worker Actor</em>.  The first step is to change how <em>forwardTask</em> handles <em>CollectResults</em>:</p>
+<p>Here you can see that we introduced <em>results</em> which is a collection of all received messages from workers. When all results are collected from workers, we will transform responses to the final result and pass it to the parent(<em>Ingestion Actor</em>), but it’s better to pass this <em>results</em> via behavior, like we did it in <em>Worker Actor</em>.  The first step is to change how <em>forwardTask</em> handles <em>CollectResults</em>:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">case</span> <span class="nc">CollectResults</span> <span class="k">=&gt;</span> <span class="o">{</span>
   <span class="nv">workers</span><span class="o">.</span><span class="py">foreach</span><span class="o">(</span><span class="k">_</span> <span class="o">!</span> <span class="nv">Worker</span><span class="o">.</span><span class="py">ResultRequest</span><span class="o">)</span>
@@ -518,7 +518,7 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Finally, we need to do some modifications in “collectResults” behaviour.</p>
+<p>Finally, we need to do some modifications to “collectResults” behavior.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">collectResults</span><span class="o">(</span><span class="n">agg</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">ResultResponse</span><span class="o">])</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
   <span class="k">case</span> <span class="n">res</span> <span class="k">@</span> <span class="nc">ResultResponse</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">if</span> <span class="nv">agg</span><span class="o">.</span><span class="py">length</span> <span class="o">==</span> <span class="o">(</span><span class="n">nWorkers</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="k">=&gt;</span>
@@ -528,7 +528,7 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>I first introduced variables, because for most people at first, it’s hard to pass the state via behaviour. It will take some time till you get used to it, I also had a problem to fully understand this pattern.</p>
+<p>I first introduced variables, because for most people at first, it’s hard to pass the state via behavior. It will take some time till you get used to it, I also had a problem to fully understand this pattern.</p>
 
 <p>Let’s review the rest of the <em>Master Actors</em> code:</p>
 
@@ -592,7 +592,7 @@ Actors <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em
 <p>This is the last part of <em>Data processing with Akka Actors</em> series. Here is the source code if you want to play with it or even improve it.
 Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog/tree/master/actors">Data processing with Akka Actors</a>.</p>
 
-<p>You learned how to write a relatively simple application with Akka, how to design master-worker architecture and how to implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor codebase to use Typed Actors and to implement supervision strategy for actors. Check official Akka documentation on <a href="https://doc.akka.io/docs/akka/2.6/general/supervision.html">Supervision and Monitoring</a> to learn more about it. Another way to improve this application will be to completely remove <em>Master Actor</em> and to use <a href="https://doc.akka.io/docs/akka/current/routing.html">Akka Routers</a>, that can easily help us to distribute request among workers without worrying about the implementation of algorithms like round-robin or some else, as we did here for the purpose of learning.</p>
+<p>You learned how to write a relatively simple application with Akka, how to design master-worker architecture, and how to implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor codebase to use Typed Actors and to implement supervision strategy for actors. Check official Akka documentation on <a href="https://doc.akka.io/docs/akka/2.6/general/supervision.html">Supervision and Monitoring</a> to learn more about it. Another way to improve this application will be to completely remove <em>Master Actor</em> and to use <a href="https://doc.akka.io/docs/akka/current/routing.html">Akka Routers</a>, that can easily help us to distribute request among workers without worrying about the implementation of algorithms like round-robin or some else, as we did here for the purpose of learning.</p>
 
 <p>Some of these improvements will be a theme for another article.</p>
 
@@ -685,6 +685,33 @@ Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog
     <div class="page__related">
       <h4 class="page__related-title">You May Also Enjoy</h4>
       <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title" itemprop="headline">
+      
+        <a href="http://localhost:4000/a-taste-of-functional-java/" rel="permalink">A Taste of Functional Java
+</a>
+      
+    </h2>
+    
+      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  19 minute read
+</p>
+    
+    <p class="archive__item-excerpt" itemprop="description">Java, JVM, Functional Programming
+</p>
+  </article>
+</div>
         
           
 
