@@ -314,7 +314,7 @@
       <section class="page__content" itemprop="text">
         
         
-<p>There are a lot of different definitions of what functional programming is. For people new to it, it’s can be really hard to understand what it actually is, since there are a lot of materials related to it, but rarely you will find one that will clearly present basics and gives you a broader picture. The result of that is that I met a lot of developers who things that Java Stream API is functional programming, or even worse some of them identify AWS Lambdas with functional programming. Yes, Java Stream API has something to do with functional programming, but it’s just a really small part of it. My goal is just to try to give you a high-level overview of pure functional programming, how it is usually referenced among functional programmers.</p>
+<p>There are a lot of different definitions of what functional programming is. For people new to it, it’s can be really hard to understand what it actually is, since there are a lot of materials related to it, but rarely you will find one that will clearly present basics and gives you a broader picture. The result of that is that I met a lot of developers who thinks that Java Stream API is functional programming, or even worse some of them identify AWS Lambdas with functional programming. Yes, Java Stream API has something to do with functional programming, but it’s just a tiny part of it. My goal is just to try to give you a high-level overview of pure functional programming, how it is usually referenced among functional programmers.</p>
 
 <p>If someone asks me should Java be used for functional programming, my answer will be no. Usually, as a (junior) developer, you don’t have a choice of technology, but what can you do is to make that Java code better by making it more functional.
 Java is not a friendly language for functional programming like Scala or Haskell are, but introducing some functional structures and concepts into your Java code will definitely improve maintainability, safety, readability, and general quality of your codebase. Even if we are going to use a few functional concepts in our Java applications, we can’t say that we are writing purely functional code, because some rules of functional programming will be violated. First, let’s review some core concepts of functional programming and see why it can be extremely hard to satisfy all those rules, especially in Java.</p>
@@ -323,7 +323,7 @@ Java is not a friendly language for functional programming like Scala or Haskell
 
 <p>Functional programming is programming with functions. This sounds pretty simple and you can say that you are already doing it. But there is a trick here of course. Function in functional programming is treated as the one in mathematics: <em>binary relation that map arguments to result</em>.</p>
 
-<p>These functions are often referred to as <em>pure functions</em> and are not allowed to perform any side effects. So now when you know that side effects like mutations, exceptions, and I/O operations are forbidden in a purely functional world, it seems that it’s impossible to write purely functional software. Once you start digging deeper into the functional world, you will realize that is possible, but in Java it’s just not worth it. So instead of going fully functional, we will explore some functional structures and use them to solve your day to day problems.</p>
+<p>These functions are often referred to as <em>pure functions</em> and are not allowed to perform any side effects. So now when you know that side effects like mutations, exceptions, and I/O operations are forbidden in a purely functional world, it seems that it’s impossible to write purely functional software. Once you start digging deeper into the functional world, you will realize that is possible, but in Java it’s just not worth it. So instead of going fully functional, we will explore some functional structures and use them to solve your day-to-day problems.</p>
 
 <figure>
   <img src="http://localhost:4000/images/fp/pure-functions.png" class="center-image " />
@@ -421,7 +421,7 @@ There is no code nesting and ugly pyramids of doom, repeatable for loops, extens
 
 <h2 id="option-type">Option Type</h2>
 
-<p>Option is a container type which represents an optional value. It helps to avoid <em>NullPointerException</em> in our code and to deal with missing values in a clear and elegant way. It is often used in data retrieval or validation logic when you don’t need the details about potential errors. If an error happens <em>Option</em> just will be empty. <a href="https://www.vavr.io/vavr-docs/#_option">Vavr Option</a> implementation is pretty similar to the <a href="https://www.scala-lang.org/api/current/scala/Option.html">Option in Scala</a>, where instances of <em>Option</em> are either an instance of <em>Some</em> or the <em>None</em>. Some of the common mistakes that developers are making while using <em>Option</em> will be reviewed in this chapter.</p>
+<p><em>Option</em> is a container type which represents an optional value. It helps to avoid <em>NullPointerException</em> in our code and to deal with missing values in a clear and elegant way. It is often used in data retrieval or validation logic when you don’t need the details about potential errors. If an error happens <em>Option</em> just will be empty. <a href="https://www.vavr.io/vavr-docs/#_option">Vavr Option</a> implementation is pretty similar to the <a href="https://www.scala-lang.org/api/current/scala/Option.html">Option in Scala</a>, where instances of <em>Option</em> are either an instance of <em>Some</em> or the <em>None</em>. Some common mistakes that developers are making while using <em>Option</em> will be reviewed in this chapter.</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">final</span> <span class="kd">class</span> <span class="nc">UserService</span> <span class="o">{</span>
 
@@ -469,7 +469,7 @@ Now let’s review the solution that demonstrates proper usage of <em>Options</e
     <span class="k">return</span> <span class="n">mapper</span><span class="o">.</span><span class="na">writeValueAsString</span><span class="o">(</span><span class="n">user</span><span class="o">);</span>
 <span class="o">}</span>
 </code></pre></div></div>
-<p>Now we should modify our method that after getting the user will map it to he JSON, or return an empty JSON object.</p>
+<p>Now we should modify our method that after getting the user will map it to the JSON, or return an empty JSON object.</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">String</span> <span class="nf">getUserJson</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Long</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
     <span class="kd">final</span> <span class="nc">Option</span><span class="o">&lt;</span><span class="nc">User</span><span class="o">&gt;</span> <span class="n">fromCache</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="na">getFromCache</span><span class="o">(</span><span class="n">id</span><span class="o">);</span>
@@ -498,7 +498,7 @@ Now let’s review the solution that demonstrates proper usage of <em>Options</e
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Huh, pretty messy if you ask me. Let’s try Java 8 approach with Stream API, maybe it will be a little bit better.</p>
+<p>Huh, pretty messy if you ask me. Let’s try Java 8 approach with Stream API, maybe it will be a bit better.</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">String</span> <span class="nf">getUserJson</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Long</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">return</span> <span class="n">service</span><span class="o">.</span><span class="na">getFromCache</span><span class="o">(</span><span class="n">userId</span><span class="o">)</span>
@@ -519,7 +519,7 @@ Now let’s review the solution that demonstrates proper usage of <em>Options</e
 
 <h2 id="try-or-throw">Try or Throw?</h2>
 
-<p><em>Try</em> is a container type which represents a computation that may either result in an exception, or return a successfully computed value.
+<p><em>Try</em> is one more concept that comes from <a href="https://www.javadoc.io/doc/io.vavr/vavr/0.9.2/io/vavr/control/Try.html">Vavr</a>. It’s a monadic container type that represents a computation that may either result in an exception or return a successfully computed value.
 Instances of <em>Try</em>, are either an instance of <em>Success</em> or <em>Failure</em>. <em>Try</em> enables us to overcome problems with exception handling we had. Here is an improved solution utilizing the <em>Try</em>.</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">String</span> <span class="nf">getUserJson</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Long</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
@@ -533,7 +533,7 @@ Instances of <em>Try</em>, are either an instance of <em>Success</em> or <em>Fai
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>What we did to improve our code is basically just wrapping the invocation of an unsafe method into <em>Try</em>. Methods have exactly the same meaning as the previous one but it much more readable. If the method was successfully executed, the return value will be wrapped into <em>Try</em>. On the other hand, if an exception occurs it will not interrupt our program, it will be just wrapped into <em>Try</em> and we have absolute control about it. In <em>flatMap</em> block, we first check if <em>Try</em> is succeeded and then get it’s value if it is. If computation failed, you can extract exception out of Try by invoking a method <em>getCause</em>. If you want a more explicit solution here it is.</p>
+<p>What we did to improve our code is basically just wrapping the invocation of an unsafe method into <em>Try</em>. Methods have exactly the same meaning as the previous one but it much more readable. If the method was successfully executed, the return value will be wrapped into <em>Try</em>. On the other hand, if an exception occurs it will not interrupt our program, it will be just wrapped into <em>Try</em> and we have absolute control about it. In <em>flatMap</em> block, we first check if <em>Try</em> is succeeded and then get its value inside. If computation failed, you can extract exception out of Try by invoking a method <em>getCause</em>. If you want a more explicit solution here it is.</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">String</span> <span class="nf">getUserJsonBetter</span><span class="o">(</span><span class="kd">final</span> <span class="nc">Long</span> <span class="n">id</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">return</span> <span class="n">service</span><span class="o">.</span><span class="na">getFromCache</span><span class="o">(</span><span class="n">id</span><span class="o">)</span>
@@ -589,13 +589,13 @@ Instances of <em>Try</em>, are either an instance of <em>Success</em> or <em>Fai
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Here is another example of how to use <em>Try</em> and it perfectly fine to return <em>Try&lt;</em>String<em>&gt;</em> from a method. We have a strategy on how to handle exceptions if the user is missing but we don’t want to handle exception related to JSON serialization, so we just pushed that responsibility to the client-side. A developer who is going to use our method is aware that exceptions are possible since we are returning a <em>Try&lt;</em>String<em>&gt;</em> and on him is to decide how to deal with potential exceptions. The first exception that can happen is when there is no user in a cache, so if <em>NoUserInCacheException</em> occurs, we will recover from that with another <em>Try</em> which again can fail with <em>NoUserInRepositoryException</em>, but from that,  we are always recovered successfully with the default user that we defined. Here I used <em>recoverWith</em> instead of <em>recover</em>, and the difference is that as a second parameter <em>recoverWith</em> requires an instance of a <em>Try</em>, while recover accept some value or just a regular method.</p>
+<p>Here is another example of how to use <em>Try</em> and it’s perfectly fine to return <em>Try&lt;</em>String<em>&gt;</em> from a method. We have a strategy on how to handle exceptions if the user is missing, but we don’t want to handle exception related to JSON serialization, so we just pushed that responsibility to the client-side. A developer who is going to use our method is aware that exceptions are possible since we are returning a <em>Try&lt;</em>String<em>&gt;</em> and on him is to decide how to deal with potential exceptions. The first exception that can happen is when there is no user in a cache, so if <em>NoUserInCacheException</em> occurs, we will recover from that with another <em>Try</em> which again can fail with <em>NoUserInRepositoryException</em>, but from that,  we are always recovered successfully with the default user that we defined. Here I used <em>recoverWith</em> instead of <em>recover</em>, and the difference is that as a second parameter <em>recoverWith</em> requires an instance of a <em>Try</em>, while recover accept some value or just a regular method.</p>
 
 <h2 id="the-beauty-of-functional-style">The Beauty of Functional Style</h2>
 
-<p>Once again I’m using the term <em>functional style</em> because our code looks functional-ish, but it’s far from ideal by functional programming standards. So just to point out that we are not allowed to call our code functional, but saying that is written in a functional style is acceptable. Later I will refer you to the resources about pure functional programming in Scala since it’s not completely possible in Java, at least that I know. Scala has a few state of the art libraries that unlocks the full potential of functional programming. Even though we are far that and we started by just introducing basic functional concepts we are able to notice that our code becomes better.</p>
+<p>Once again I’m using the term <em>functional style</em> because our code looks <em>functional-ish</em>, but it’s far from ideal by functional programming standards. So just to point out that we are not allowed to call our code functional, but saying that is written in a functional style is acceptable. Later I will refer you to the resources about pure functional programming in Scala since it’s not completely possible in Java, at least that I know. Scala has a few <em>state-of-the-art</em> libraries that unlocks the full potential of functional programming. Even though we are far from that, and we started by just introducing basic functional concepts we are able to notice that our code becomes better.</p>
 
-<p>Now let’s see some more code. We have to implement a method that will accept a collection of endpoints and we need to send a request to them and extract some information from the response. Information that we need from the response is first and last name of the user, so before we start to write our business logic we need to implement a class that will contain our user details.</p>
+<p>Now let’s see some more code. We have to implement a method that will accept a collection of endpoints, and we need to send a request to them and extract some information from the response. Information that we need from the response is first and last name of the user, so before we start to write our business logic we need to implement a class that will contain our user details.</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="nc">UserInfo</span> <span class="o">{</span>
 
@@ -668,7 +668,7 @@ Instances of <em>Try</em>, are either an instance of <em>Success</em> or <em>Fai
             <span class="o">.</span><span class="na">collect</span><span class="o">(</span><span class="nc">Collectors</span><span class="o">.</span><span class="na">toList</span><span class="o">());</span>
 <span class="o">}</span>
 </code></pre></div></div>
-<p>Maybe a little bit better, but once again huge lambda expression with <em>try/catch</em> which is inevitable without data type like we introduced in a previous chapter. If you are a little bit confused with a flatMap part it can be replaced with these two lines:</p>
+<p>Maybe a bit better, but once again huge lambda expression with <em>try/catch</em> which is inevitable without data type like we introduced in a previous chapter. If you are a little confused with a flatMap part it can be replaced with these two lines:</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="nl">Optional:</span><span class="o">:</span><span class="n">isPresent</span><span class="o">)</span>
 <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="nl">Optional:</span><span class="o">:</span><span class="n">get</span><span class="o">)</span>
@@ -688,12 +688,13 @@ Instances of <em>Try</em>, are either an instance of <em>Success</em> or <em>Fai
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>And finally here is a Vavr based solution, which is shorter and we even didn’t have to implement some temporary class to store results, we just used <a href="https://www.vavr.io/vavr-docs/#_tuples">Tuple</a>, which is extremely useful in a lot of cases, but unfortunately, Java doesn’t support them by default.
+<p>And finally here is a Vavr based solution, which is shorter, and we even didn’t have to implement some temporary class to store results, we just used <a href="https://www.vavr.io/vavr-docs/#_tuples">Tuple</a>, which is extremely useful in a lot of cases, but unfortunately, Java doesn’t support them by default.
 Of course, this method would be much more compacted if we would extract all those methods for sending requests, parsing JSON, and mapping to Tuple. We wrote a lot of code utilizing <em>Try</em> type, and to summarize I want to note that <em>Try</em> is a great approach to gain full control of your code by taming exceptions, which are tricky and very dangerous since they are able to secretly change the flow of a program. Simply use <em>Try</em> whenever you need to make safe wrappers around API, whom you do not have control of. And if you want even more expressive approach to deal with exceptions, but equally powerful like a <em>Try</em> there is a solution for it.</p>
 
 <h2 id="either-type">Either Type</h2>
 
-<p><em>Either</em> represents a value of two possible types. An <em>Either</em> is either a <em>Left</em> or a <em>Right</em>. Both Left and Right can wrap any type. By convention Right is right, so it contains the successful result, and the Left side should contain the error. This is not mandatory but you should stick to the convention. I bet you noticed some similarity here with a <em>Try</em>, and the only difference is that error in <em>Try</em> must be an instance of a <em>Throwable</em>, while an error in <em>Either</em> can be whatever you want. You can use the custom message as a <em>String</em>, or you can wrap exception. Example usage of <em>Either</em>:</p>
+<p><a href="https://www.javadoc.io/doc/io.vavr/vavr/0.9.0/io/vavr/control/Either.html"><em>Either</em></a> is the last type that we are going to explore from Vavr.
+<em>Either</em> represents a value of two possible types. An <em>Either</em> is either a <em>Left</em> or a <em>Right</em>. Both Left and Right can wrap any type. By convention Right is right, so it contains the successful result, and the Left side should contain the error. This is not mandatory but you should stick to the convention. I bet you noticed some similarity here with a <em>Try</em>, and the only difference is that error in <em>Try</em> must be an instance of a <em>Throwable</em>, while an error in <em>Either</em> can be whatever you want. You can use the custom message as a <em>String</em>, or you can wrap exception. Example usage of <em>Either</em>:</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">Either</span><span class="o">&lt;</span><span class="nc">JsonProcessingException</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="nf">toJson</span><span class="o">(</span><span class="kd">final</span> <span class="nc">User</span> <span class="n">user</span><span class="o">)</span> <span class="o">{</span>
     <span class="k">try</span> <span class="o">{</span>
@@ -704,7 +705,7 @@ Of course, this method would be much more compacted if we would extract all thos
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>As I mentioned earlier, <em>Either</em> is more expressive than a <em>Try</em> since from a method signature you have complete knowledge about behaviour of a method. Are you going to use <em>Either</em> or <em>Try</em> is totally up to you and whatever you choose it certainly better than constantly using <em>try/catch</em> blocks and checked exceptions. <em>Either</em> have very rich <a href="https://www.javadoc.io/doc/io.vavr/vavr/0.9.0/io/vavr/control/Either.html">API</a> that you should explore. What you should know is that <em>Either</em> have also <em>map</em> which will apply mapping function on the <em>Right</em> side while completely ignoring <em>Left</em> side. Even if you need to <em>map</em> over <em>Left</em> side you have <em>mapLeft</em> method. Also <em>bimap</em> method is available which accepts two functions, left and right mapper functions. Also <em>flatMap</em> and <em>filter</em> combinators are available, which by default operates on the <em>Right</em> side. There is a plenty of interesting operators available in the <em>Either</em> and I just presented the most used ones.</p>
+<p>As I mentioned earlier, <em>Either</em> is more expressive than a <em>Try</em> since from a method signature you have complete knowledge about behaviour of a method. Are you going to use <em>Either</em> or <em>Try</em> is totally up to you and whatever you choose it certainly better than constantly using <em>try/catch</em> blocks and checked exceptions. <em>Either</em> have very rich <a href="https://www.javadoc.io/doc/io.vavr/vavr/0.9.0/io/vavr/control/Either.html">API</a> that you should explore. What you should know is that <em>Either</em> have also <em>map</em> which will apply mapping function on the <em>Right</em> side while completely ignoring <em>Left</em> side. Even if you need to <em>map</em> over <em>Left</em> side you have <em>mapLeft</em> method. Also, <em>bimap</em> method is available which accepts two functions, left and right mapper functions. <em>flatMap</em> and <em>filter</em> combinators are available, which by default operates on the <em>Right</em> side. There is a plenty of interesting operators available in the <em>Either</em> and I just presented the most used ones.</p>
 
 <h2 id="scala-and-functional-programming">Scala and Functional Programming</h2>
 
@@ -715,6 +716,14 @@ Of course, this method would be much more compacted if we would extract all thos
 <p>We cover a lot of new concepts that are pretty unusual in a Java world. To be honest they are simple enough yet unbelievably powerful, whose effects just can’t be ignored. Amount of confidence you felt for the first working with <em>Try</em> or <em>Either</em> should be present all the time while coding, which is not the case while handling the exceptions in a traditional way. Also, the composition of <em>Options</em> is pretty cool, and also I noticed that a lot of Java developers who are using it are not aware of that you can apply <em>map</em>, <em>flatMap</em>, and <em>filter</em> on it, so I tried to show some common patterns on how to utilize those concepts in a right way.</p>
 
 <p>I hope that you have learned something new and that you realize the benefits offered by writing Java in a functional style. Of course, there are a lot of concepts that are not covered like using immutable collections and immutable data types, but I think it’s enough to start improving your Java codebase.</p>
+
+<p>You can find me at:</p>
+<ul>
+  <li><a href="https://www.linkedin.com/in/aleksandar-skrbic/">Linkedin</a></li>
+  <li><a href="https://github.com/aleksandarskrbic">Github</a></li>
+</ul>
+
+<p>Or just send me a question to <a href="">skrbic.alexa@gmail.com</a></p>
 
         
       </section>
