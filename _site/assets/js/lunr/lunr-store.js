@@ -15,7 +15,7 @@ var store = [{
         "url": "http://localhost:4000/power-of-akka-streams/",
         "teaser":null},{
         "title": "A Taste of Functional Java",
-        "excerpt":"There are a lot of different definitions of what functional programming is. For people new to it, it’s can be really hard to understand what it actually is, since there are a lot of materials related to it, but rarely you will find one that will clearly present basics and...","categories": [],
+        "excerpt":"There are lots of different definitions of what functional programming is. For people new to it, it can be really hard to understand what it actually is, since there is a plethora of materials related to it. You will rarely find one that will clearly present basics and give you...","categories": [],
         "tags": ["java","jvm","fp"],
         "url": "http://localhost:4000/a-taste-of-functional-java/",
         "teaser":null}]

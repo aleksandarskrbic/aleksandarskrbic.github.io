@@ -9,16 +9,16 @@ excerpt: "Java, JVM, Functional Programming"
 
 {: .text-left}
 
-There are a lot of different definitions of what functional programming is. For people new to it, it's can be really hard to understand what it actually is, since there are a lot of materials related to it, but rarely you will find one that will clearly present basics and gives you a broader picture. The result of that is that I met a lot of developers who thinks that Java Stream API is functional programming, or even worse some of them identify AWS Lambdas with functional programming. Yes, Java Stream API has something to do with functional programming, but it's just a tiny part of it. My goal is just to try to give you a high-level overview of pure functional programming, how it is usually referenced among functional programmers.
+There are lots of different definitions of what functional programming is. For people new to it, it can be really hard to understand what it actually is, since there is a plethora of materials related to it. You will rarely find one that will clearly present basics and give you a broader picture. The result of that is that I met a lot of developers who think that Java Stream API is functional programming, or even worse some of them identify AWS Lambda with functional programming. Yes, Java Stream API has something to do with functional programming, but it's just a tiny part of it. My goal is to try to give you a high-level overview of pure functional programming, how it is usually referenced among functional programmers.
 
-If someone asks me should Java be used for functional programming, my answer will be no. Usually, as a (junior) developer, you don't have a choice of technology, but what can you do is to make that Java code better by making it more functional.
-Java is not a friendly language for functional programming like Scala or Haskell are, but introducing some functional structures and concepts into your Java code will definitely improve maintainability, safety, readability, and general quality of your codebase. Even if we are going to use a few functional concepts in our Java applications, we can’t say that we are writing purely functional code, because some rules of functional programming will be violated. First, let's review some core concepts of functional programming and see why it can be extremely hard to satisfy all those rules, especially in Java.
+If someone asks me should Java be used for functional programming, my answer will be a no. Usually, as a (junior) developer, you don't have a choice of technology, but what can you do is to make that Java code better by making it more functional.
+Java is not a friendly language for functional programming like Scala or Haskell are, but introducing some functional structures and concepts into your Java code will definitely improve maintainability, safety, readability, and general quality of your codebase. Even if we are going to use only a few functional concepts in our Java applications, we can’t say that we are writing purely functional code, because some rules of functional programming will be violated. First, let's review some core concepts of functional programming and see why it can be extremely hard to satisfy all those rules, especially in Java.
 
 ## Really short definition of FP
 
 Functional programming is programming with functions. This sounds pretty simple and you can say that you are already doing it. But there is a trick here of course. Function in functional programming is treated as the one in mathematics: *binary relation that map arguments to result*.
 
-These functions are often referred to as *pure functions* and are not allowed to perform any side effects. So now when you know that side effects like mutations, exceptions, and I/O operations are forbidden in a purely functional world, it seems that it's impossible to write purely functional software. Once you start digging deeper into the functional world, you will realize that is possible, but in Java it's just not worth it. So instead of going fully functional, we will explore some functional structures and use them to solve your day-to-day problems.
+These functions are often referred to as *pure functions* and are not allowed to perform any side effects. So now when you know that side effects like mutations, exceptions, and I/O operations are forbidden in a purely functional world, it seems that it's impossible to write purely functional software. Once you start digging deeper into the functional world, you will realize that is possible, but in Java it's just not worth it. So instead of going fully functional, we will explore some functional structures and use them to solve our day-to-day problems.
 
 <figure>
   <img src="{{ site.url }}{{ site.baseurl }}/images/fp/pure-functions.png" class="center-image ">
@@ -53,9 +53,9 @@ public List<TrainingSession> findSessionsByDay(final DayOfWeek day) {
 }
 ```
 
-I can't say this solution is wrong, but every time I see something similar to this I start asking myself why are we repeating ourselves over and over again while writing loops. It's clearly a boilerplate and it can be avoided by abstract over it. We should describe what we want our program to do, and not wasting time writing the same loops all the time and worry about loop index and temporary variables that will help us to finish our task.
+I can't say that this solution is wrong, but every time I see something similar to this I start asking myself why are we repeating ourselves over and over again while writing loops. It's clearly a boilerplate and it can be avoided by abstract over it. We should describe what we want our program to do, and not wasting time writing the same loops all the time and worry about loop index and temporary variables that will help us to finish our task.
 
-Let's review another solution probably written by developer who just heard about Stream API and how cool it is.
+Let's review another solution probably written by a developer who just heard about Stream API and how cool it is.
 
 ```java
 public List<TrainingSession> findSessionsByDay(final DayOfWeek day) {
@@ -73,7 +73,7 @@ public List<TrainingSession> findSessionsByDay(final DayOfWeek day) {
     return sessions;
 }
 ```
-Wow, looks cool, looks declarative but I think it's worse than the first solution. It demonstrates insufficient knowledge and understanding of Stream API and the whole point about it. The first mistake is using *forEach* since it can be replaced with some other operation, and the second one is *if* expression in a *forEach* instead of applying *filter* on *Optional*. Often people get confused when they should deal with nested structures like *List of Optionals* or *Stream of Streams*. So let's see how we should solve this problem.
+Wow, looks cool, looks declarative but I think it's worse than the first solution. It demonstrates insufficient knowledge and understanding of Stream API and the whole point about it. The first mistake is using *forEach* since it can be replaced with some other operation, and the second one is *if* expression in a *forEach* instead of applying *filter* on *Optional*. Often people get confused when they should deal with nested structures like *List of Optional* or *Stream of Stream*. So, let's see how we should solve this problem.
 
 ```java
 public List<TrainingSession> findSessionsByDay(final DayOfWeek day) {
@@ -88,7 +88,7 @@ public List<TrainingSession> findSessionsByDay(final DayOfWeek day) {
 ```
 
 I hope you are able to capture the difference in this approach. We see that one *flatMap* solves our hard problem of nested structures. Maybe the easiest way to think about *flatMap* is that it allows you to remove one level of nesting or unwraps inner structure.
-If you know that this solution can be even shorter than you are a probably Scala developer.
+If you know that this solution can be even shorter than you are probably a Scala developer.
 
 ```java
 public List<TrainingSession> findSessionsByDay(final DayOfWeek day) {
@@ -103,10 +103,10 @@ public List<TrainingSession> findSessionsByDay(final DayOfWeek day) {
 ```
 This is our final solution and summary is that we reduced *15+* lines of code that contains two *for loops* and two *if expressions* with basically a one-liner, just with the two *flatMap* operations, and one *filter*.
 
-I'm sure that I got your attention now, and that you finally realized the power of declarative approach and functional style of programming. The solution is pretty readable and clearly expresses what is our intention. Maybe you noticed that I used shorter variable names which is very common practice in a functional world, even though a typical Java developer will think that this is not expressive enough. 
-There is no code nesting and ugly pyramids of doom, repeatable for loops, extensive usage of if expressions, and creation of temporary variables that will be filled upon iteration.
+I'm sure that I got your attention now, and that you finally realized the power of declarative approach and functional style of programming. The solution is pretty readable and clearly expresses what is our intention. Maybe, you noticed that I used shorter variable names which is very common practice in a functional world, even though a typical Java developer will think that this is not expressive enough. 
+There is no code nesting and ugly *pyramids of doom*, repeatable *for loops*, extensive usage of *if expressions*, and creation of *temporary variables* that will be filled upon iteration.
 
-In the next few chapters, I will present a couple of concepts that are usually used in a functional world but unfortunately are not available in Java Standard Library. We are going to use [Vavr](https://www.vavr.io/), which is a Java library that provides us immutable collections that already have operations like *map*, *flatMap*, *filter*, and others without the need to transform it to the *Stream* first. Besides new collection API, Vavr gives us a few monadic containers types like *Option*, *Try*, and *Either* that we are going to explore to the details. These types are pretty interesting and by applying them your code becomes safer, declarative, and composable.
+In the next few chapters, I will present a couple of concepts that are usually used in a functional world and unfortunately are not available in Java Standard Library. We are going to use [*Vavr*](https://www.vavr.io/), which is a Java library that provides us immutable collections that already has operations like *map*, *flatMap*, *filter*, and others without the need to transform it to the *Stream* first. Besides new collection API, *Vavr* gives us a few monadic containers types like *Option*, *Try*, and *Either* that we are going to explore to the details. These types are pretty interesting and by applying them your code becomes safer, declarative, and composable.
 
 [Vavr Option](https://www.vavr.io/vavr-docs/#_option) is similar to [Java Optional](https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html), but there are a couple of problems with Core Java implementation. If you want to find more about it, check the next articles:
 
@@ -119,7 +119,7 @@ In the next few chapters, I will present a couple of concepts that are usually u
 
 ## Option Type  
 
-*Option* is a container type which represents an optional value. It helps to avoid *NullPointerException* in our code and to deal with missing values in a clear and elegant way. It is often used in data retrieval or validation logic when you don't need the details about potential errors. If an error happens *Option* just will be empty. [Vavr Option](https://www.vavr.io/vavr-docs/#_option) implementation is pretty similar to the [Option in Scala](https://www.scala-lang.org/api/current/scala/Option.html), where instances of *Option* are either an instance of *Some* or the *None*. Some common mistakes that developers are making while using *Option* will be reviewed in this chapter.
+*Option* is a container type that represents an optional value. It helps to avoid *NullPointerException* in our code and to deal with missing values in a clear and elegant way. It is often used in data retrieval or validation logic when you don't need the details about potential errors. If an error happens *Option* just will be empty. [Vavr Option](https://www.vavr.io/vavr-docs/#_option) implementation is pretty similar to the [Option in Scala](https://www.scala-lang.org/api/current/scala/Option.html), where instances of *Option* are either an instance of *Some* or the *None*. Some common mistakes that developers are making while using *Option* will be reviewed in this chapter.
 
 ```java
 final class UserService {
@@ -133,7 +133,7 @@ final class UserService {
     }
 }
 ```
-Now we need to add another method to the *UserService*. Our task is to find a user by id, but first, try to get a user from the cache and if it's not in the cache, then try to find it in the repository. If the user is missing from the repository throw some exception. A typical implementation that I have seen a lot of times is pretty similar to this:
+Now we need to add another method to the *UserService*. Our task is to find a user by an id, but first, try to get a user from the cache and if it's not in the cache, then try to find it in the repository. If the user is missing from the repository throw some exception. A typical implementation that I have seen a lot of times is pretty similar to this:
 
 ```java
 public User getUser(final Long id) {
@@ -162,16 +162,16 @@ public User getUser(final Long id) {
 }
 ```
 
-A much shorter solution with clear intentions without *if* checks. I think this code is pretty descriptive. Get a user from the cache or else get it from the repository, if there is no user throw exception. Methods like *orElse* and *getOrElseThrow* gives us possibility of composing multiple *Option* types, and you should use it all the time in order to avoid imperative style.
+A much shorter solution with clear intentions without *if* checks. I think this code is pretty descriptive. Get a user from the cache or else get it from the repository, if there is no user throw exception. Methods like *orElse* and *getOrElseThrow* gives us the possibility of composing multiple *Option* types, and you should use it all the time in order to avoid imperative style.
 
-If we need to modify our method to get the user in JSON format, code will become pretty messy, since there is a possibility of exception during deserialization of the object. First, we need to introduce a method for deserialization that can possibly throw an exception.
+If we need to modify our method to get the user in JSON format, code will become pretty messy, since there is a possibility of exception during deserialization of an object. First, we need to introduce a method for deserialization that can throw an exception.
 
 ```java
 private String toJson(final User user) throws JsonProcessingException {
     return mapper.writeValueAsString(user);
 }
 ```
-Now we should modify our method that after getting the user will map it to the JSON, or return an empty JSON object.
+Now we should modify our method that after getting the user will map it to the JSON, or return an empty JSON object upon exception.
 
 ```java
 public String getUserJson(final Long id) {
@@ -219,7 +219,7 @@ public String getUserJson(final Long id) {
 }
 ```
 
-The more expressive and shorter solution, but there is a  huge lambda expression in *map* with *try/catch* block which probably is not a great solution, but it is the best if you are using Java since there is no way to avoid exception handling. For those coming from Scala *Try* is a natural solution for this problem.
+The more expressive and shorter solution, but there is a  huge lambda expression in *map* with *try/catch* block which probably is not a great solution, but it is the best if you are using Java since there is no way to avoid exception handling. For those coming from Scala background *Try* will be a natural solution for this problem.
 
 ## Try or Throw?
 
@@ -238,7 +238,7 @@ public String getUserJson(final Long id) {
 }
 ```
 
-What we did to improve our code is basically just wrapping the invocation of an unsafe method into *Try*. Methods have exactly the same meaning as the previous one but it much more readable. If the method was successfully executed, the return value will be wrapped into *Try*. On the other hand, if an exception occurs it will not interrupt our program, it will be just wrapped into *Try* and we have absolute control about it. In *flatMap* block, we first check if *Try* is succeeded and then get its value inside. If computation failed, you can extract exception out of Try by invoking a method *getCause*. If you want a more explicit solution here it is.
+What we did to improve our code is basically just wrapping the invocation of an unsafe method into *Try*. Methods have exactly the same meaning as the previous one but it much more readable. If the method was successfully executed, the return value will be wrapped into *Try*. On the other hand, if an exception occurs it will not interrupt our program, it will be just wrapped into *Try* and we have absolute control over it. In *flatMap* block, we first check if *Try* is succeeded and then get its value inside. If computation failed, you can extract exception out of *Try* by invoking a method *getCause*. If you want a more explicit solution here it is.
 
 ```java
 public String getUserJsonBetter(final Long id) {
@@ -280,7 +280,7 @@ final class UserService {
 }
 ```
 
-Similarly to our first *UserService*, but this one throws an exception when user is not present. So how to implement the safest possible method to retrieve a user in a JSON format, when we know there are multiple exceptions than can occur.
+Similarly to our first *UserService*, but this one throws an exception when the user is not present. So, how to implement the safest possible method to retrieve a user in a JSON format, when we know there are multiple exceptions than can occur.
 
 ```java
 public Try<String> getUser(final Long id) {
@@ -297,7 +297,7 @@ public Try<String> getUser(final Long id) {
 }
 ```
 
-Here is another example of how to use *Try* and it's perfectly fine to return *Try<*String*>* from a method. We have a strategy on how to handle exceptions if the user is missing, but we don't want to handle exception related to JSON serialization, so we just pushed that responsibility to the client-side. A developer who is going to use our method is aware that exceptions are possible since we are returning a *Try<*String*>* and on him is to decide how to deal with potential exceptions. The first exception that can happen is when there is no user in a cache, so if *NoUserInCacheException* occurs, we will recover from that with another *Try* which again can fail with *NoUserInRepositoryException*, but from that,  we are always recovered successfully with the default user that we defined. Here I used *recoverWith* instead of *recover*, and the difference is that as a second parameter *recoverWith* requires an instance of a *Try*, while recover accept some value or just a regular method.
+Here is another example of how to use *Try* and it's perfectly fine to return *Try<*String*>* from a method. We have a strategy on how to handle exceptions if the user is missing, but we don't want to handle exception related to JSON serialization, so we just pushed that responsibility to the client-side. A developer who is going to use our method is aware that some exceptions are possible since we are returning a *Try<*String*>* and on him is to decide how to deal with potential errors. The first exception that can happen is when there is no user in a cache, so if *NoUserInCacheException* occurs, we will recover from that with another *Try* which again can fail with *NoUserInRepositoryException*, but from that,  we are always recovered successfully with the default user that we defined. Here I used *recoverWith* instead of *recover*, and the difference is that as a second parameter *recoverWith* requires an instance of a *Try*, while recover accept some value or just a regular method.
 
 ## The Beauty of Functional Style
 
@@ -350,7 +350,7 @@ public List<UserInfo> fetch(final List<String> urls) {
 }
 ```
 
-With a Standard Java library, we had to implement a simple temporary class just to represent a user with two fields, and then we have a huge method where multiple exceptions can occur, but we wrapped it all into one *try/catch* block. Java 8 probably can help us to improve our code, but not as much as Vavr can. First, let's review Java 8 solution:
+With a Core Java, we had to implement a simple temporary class just to represent a user with two fields, and then we have a huge method where multiple exceptions can occur, but we wrapped it all into one *try/catch* block. Java 8 probably can help us to improve our code, but not as much as *Vavr* would. First, let's review Java 8 solution:
 
 ```java
 public List<UserInfo> fetch(final List<String> urls) {
@@ -379,14 +379,14 @@ public List<UserInfo> fetch(final List<String> urls) {
             .collect(Collectors.toList());
 }
 ```
-Maybe a bit better, but once again huge lambda expression with *try/catch* which is inevitable without data type like we introduced in a previous chapter. If you are a little confused with a flatMap part it can be replaced with these two lines:
+Maybe a bit better, but once again huge lambda expression with *try/catch* which is inevitable without data type like we introduced in a previous chapter. If you are confused with a flatMap part, it can be replaced with these two lines:
 
 ```java
 .filter(Optional::isPresent)
 .map(Optional::get)
 ```
 
-Basically it just checks whether an *Optional* is present or not before trying to get inside the value. Since Java Stream API is not ideal and it represents a try to imitate compositions of combinators like *map* and *flatMap* on collections of more functional languages, which support combinators by default. Not so good implementation of Stream API forces us to wrap the result of *Option* into that *flatMap* operation into Stream, which won't be necessary if Java Collections would be more functional and had combinators implemented on them directly.
+Basically it just checks whether an *Optional* is present or not before trying to get inside the value. Java 8 Stream API is not ideal and it represents a try to imitate compositions of combinators like *map* and *flatMap* on collections of more functional languages, which support combinators by default. Not so good implementation of Stream API forces us to wrap the result of *Option* into that *flatMap* operation into *Stream*, which wouldn't be necessary if Java Collections were more functional and had combinators implemented on them directly.
 
 ```java
 public List<Tuple2<String, String>> fetch(final List<String> urls) {
@@ -401,14 +401,14 @@ public List<Tuple2<String, String>> fetch(final List<String> urls) {
 }
 ```
 
-And finally here is a Vavr based solution, which is shorter, and we even didn't have to implement some temporary class to store results, we just used [Tuple](https://www.vavr.io/vavr-docs/#_tuples), which is extremely useful in a lot of cases, but unfortunately, Java doesn't support them by default.
-Of course, this method would be much more compacted if we would extract all those methods for sending requests, parsing JSON, and mapping to Tuple. We wrote a lot of code utilizing *Try* type, and to summarize I want to note that *Try* is a great approach to gain full control of your code by taming exceptions, which are tricky and very dangerous since they are able to secretly change the flow of a program. Simply use *Try* whenever you need to make safe wrappers around API, whom you do not have control of. And if you want even more expressive approach to deal with exceptions, but equally powerful like a *Try* there is a solution for it.
+And finally here is a *Vavr* based solution, which is shorter, and we even didn't have to implement some temporary class to store results, we just used [Tuple](https://www.vavr.io/vavr-docs/#_tuples), which is extremely useful in a lot of cases, but unfortunately, Java doesn't support them by default.
+Of course, this method would be much more compacted if we extracted all those methods for sending requests, parsing JSON, and mapping to Tuple. We wrote a lot of code utilizing *Try* type, and to summarize I want to note that *Try* is a great approach to gain full control of your code by taming exceptions, which are tricky and very dangerous since they are able to secretly change the flow of a program. Simply use *Try* whenever you need to make safe wrappers around API, whom you do not have control of. And if you want even more expressive approach to deal with exceptions, but equally powerful like a *Try*, *Vavr* have something for you.
 
 
 ## Either Type
 
 [*Either*](https://www.javadoc.io/doc/io.vavr/vavr/0.9.0/io/vavr/control/Either.html) is the last type that we are going to explore from Vavr.
-*Either* represents a value of two possible types. An *Either* is either a *Left* or a *Right*. Both Left and Right can wrap any type. By convention Right is right, so it contains the successful result, and the Left side should contain the error. This is not mandatory but you should stick to the convention. I bet you noticed some similarity here with a *Try*, and the only difference is that error in *Try* must be an instance of a *Throwable*, while an error in *Either* can be whatever you want. You can use the custom message as a *String*, or you can wrap exception. Example usage of *Either*:
+*Either* represents a value of two possible types. An *Either* is either a *Left* or a *Right*. Both *Left* and *Right* can wrap any type. By convention *Right* is right, so it contains the successful result, and the *Left* side should contain the error. This is not mandatory but you should stick to the convention. I bet you noticed some similarity here with a *Try*, and the only difference is that error in *Try* must be an instance of a *Throwable*, while an error in *Either* can be whatever you want. You can use the custom message as a *String*, or you can wrap exception. Example usage of *Either*:
 
 ```java
 public Either<JsonProcessingException, String> toJson(final User user) {
@@ -420,7 +420,7 @@ public Either<JsonProcessingException, String> toJson(final User user) {
 }
 ```
 
-As I mentioned earlier, *Either* is more expressive than a *Try* since from a method signature you have complete knowledge about behaviour of a method. Are you going to use *Either* or *Try* is totally up to you and whatever you choose it certainly better than constantly using *try/catch* blocks and checked exceptions. *Either* have very rich [API](https://www.javadoc.io/doc/io.vavr/vavr/0.9.0/io/vavr/control/Either.html) that you should explore. What you should know is that *Either* have also *map* which will apply mapping function on the *Right* side while completely ignoring *Left* side. Even if you need to *map* over *Left* side you have *mapLeft* method. Also, *bimap* method is available which accepts two functions, left and right mapper functions. *flatMap* and *filter* combinators are available, which by default operates on the *Right* side. There is a plenty of interesting operators available in the *Either* and I just presented the most used ones.
+As I mentioned earlier, *Either* is more expressive than a *Try* since from a method signature you have complete knowledge about behaviour of a method. Are you going to use *Either* or *Try* is totally up to you and whatever you choose it certainly better than constantly using *try/catch* blocks and checked exceptions. *Either* have very rich [API](https://www.javadoc.io/doc/io.vavr/vavr/0.9.0/io/vavr/control/Either.html) that you should explore. What you should know is that *Either* have also *map* which will apply mapping function on the *Right* side while completely ignoring *Left* side. Even though you need to *map* over *Left* side you have *mapLeft* method. Also, *bimap* method is available which accepts two functions, left and right mapper functions. *flatMap* and *filter* combinators are available, which by default operates on the *Right* side. There is a plenty of interesting operators available in the *Either* and I just presented the most used ones.
 
 ## Scala and Functional Programming
 
@@ -428,9 +428,9 @@ Mentioned earlier, Scala is much more friendly language for functional programmi
 
 ## Summary
 
-We cover a lot of new concepts that are pretty unusual in a Java world. To be honest they are simple enough yet unbelievably powerful, whose effects just can't be ignored. Amount of confidence you felt for the first working with *Try* or *Either* should be present all the time while coding, which is not the case while handling the exceptions in a traditional way. Also, the composition of *Options* is pretty cool, and also I noticed that a lot of Java developers who are using it are not aware of that you can apply *map*, *flatMap*, and *filter* on it, so I tried to show some common patterns on how to utilize those concepts in a right way.
+We covered lots of new concepts that are pretty unusual in a Java world. Honestly, they are simple enough yet unbelievably powerful, whose effects just can't be ignored. Amount of confidence you felt for the first working with *Try* or *Either* should be present all the time while coding, which is not the case while handling the exceptions in a traditional way. Also, the composition of *Options* is pretty cool, and also I noticed that a lot of Java developers who are using it are unaware of that you can apply *map*, *flatMap*, and *filter* on it, so I tried to show some common patterns on how to utilize those concepts in a right way.
 
-I hope that you have learned something new and that you realize the benefits offered by writing Java in a functional style. Of course, there are a lot of concepts that are not covered like using immutable collections and immutable data types, but I think it's enough to start improving your Java codebase.
+I hope that you have learned something new and that you realized the benefits offered by writing Java in a functional style. Of course, there are a lot of concepts that are not covered like using immutable collections and immutable data types, but I think it’s enough to start improving your Java codebase.
 
 You can find me at:
 * [Linkedin](https://www.linkedin.com/in/aleksandar-skrbic/)
