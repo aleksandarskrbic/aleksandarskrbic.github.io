@@ -404,6 +404,10 @@ public List<Tuple2<String, String>> fetch(final List<String> urls) {
 And finally here is a *Vavr* based solution, which is shorter, and we even didn't have to implement some temporary class to store results, we just used [Tuple](https://www.vavr.io/vavr-docs/#_tuples), which is extremely useful in a lot of cases, but unfortunately, Java doesn't support them by default.
 Of course, this method would be much more compacted if we extracted all those methods for sending requests, parsing JSON, and mapping to Tuple. We wrote a lot of code utilizing *Try* type, and to summarize I want to note that *Try* is a great approach to gain full control of your code by taming exceptions, which are tricky and very dangerous since they are able to secretly change the flow of a program. Simply use *Try* whenever you need to make safe wrappers around API, whom you do not have control of. And if you want even more expressive approach to deal with exceptions, but equally powerful like a *Try*, *Vavr* have something for you.
 
+<figure>
+  <img src="{{ site.url }}{{ site.baseurl }}/images/fp/fp.png" class="center-image ">
+    <figcaption>Image source: <a href="https://impurepics.com/">impurepics.com</a></figcaption>
+</figure>
 
 ## Either Type
 

@@ -691,6 +691,11 @@ Instances of <em>Try</em>, are either an instance of <em>Success</em> or <em>Fai
 <p>And finally here is a <em>Vavr</em> based solution, which is shorter, and we even didn’t have to implement some temporary class to store results, we just used <a href="https://www.vavr.io/vavr-docs/#_tuples">Tuple</a>, which is extremely useful in a lot of cases, but unfortunately, Java doesn’t support them by default.
 Of course, this method would be much more compacted if we extracted all those methods for sending requests, parsing JSON, and mapping to Tuple. We wrote a lot of code utilizing <em>Try</em> type, and to summarize I want to note that <em>Try</em> is a great approach to gain full control of your code by taming exceptions, which are tricky and very dangerous since they are able to secretly change the flow of a program. Simply use <em>Try</em> whenever you need to make safe wrappers around API, whom you do not have control of. And if you want even more expressive approach to deal with exceptions, but equally powerful like a <em>Try</em>, <em>Vavr</em> have something for you.</p>
 
+<figure>
+  <img src="http://localhost:4000/images/fp/fp.png" class="center-image " />
+    <figcaption>Image source: <a href="https://impurepics.com/">impurepics.com</a></figcaption>
+</figure>
+
 <h2 id="either-type">Either Type</h2>
 
 <p><a href="https://www.javadoc.io/doc/io.vavr/vavr/0.9.0/io/vavr/control/Either.html"><em>Either</em></a> is the last type that we are going to explore from Vavr.
