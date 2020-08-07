@@ -29,12 +29,12 @@ Here is the example of a pretty simplified model of the ZIO effect type. Real im
 final case class ZIO[-R, +E, +A](run: R => Either[E, A])
 ```
 
-```ZIO``` type is just a case class that contains a function.
+The ```ZIO``` type is just a case class that contains a function.
 The function takes a value of type `R` and produces either an error on the left-hand side or success on the right-hand side of types `E` and `A` respectively.
 
 Let's see what is ZIO really about and demystify the type parameters:
 * **R** - Environment Type. The effect may need some dependency of type `R` in order to be executed. If this type parameter is `Any`, it means
-that effect has not requirements.
+that the effect has no environmental requirements.
 * **E** - Failure Type. The effect may fail with some value of type `E`. If this type parameter is `Nothing`, it means the effect cannot fail, because there are no values of type `Nothing`.
 * **A** - Success Type. The effect may succeed with a value of type `A`. If this type parameter is `Unit`, it means the effect produces no useful information, while if it is `Nothing`, it means the effect runs forever (or until failure).
 
@@ -43,20 +43,20 @@ Type parameters explained again, through example.
 ```scala
 val effect: ZIO[Connection, UserNotFoundError, User] = ???
 ```
-We defined ZIO effect that reads something from the database. In order to run, the effect will need ```Connection```. It can fail with ```UserNotFoundError```, and can succeed with ```User```. Note that ZIO effects can fail with any subtype of Throwable or any user-defined ADT, depending on the programmer's choice of how to represent failures in their applications.
+We defined ```effect```, a ZIO effect that reads something from the database. In order to run, the effect will need ```Connection```. It can fail with ```UserNotFoundError```, and can succeed with ```User```. Note that ZIO effects can fail with any subtype of Throwable or any user-defined ADT, depending on the programmer's choice of how to represent failures in their applications.
 
 ## Effects are workflows
 
-The effects are immutable values, pretty similar to Scala immutable types like `Option`, `Either`, `Try`, `List`, etc.
-Methods on them give you a new value, that applies a specific operation on it. An example is mapping over `Option` or `List`, which will give you back new `Option` or `List`. Likewise, every operation on ZIO effect will produce new effect as a result of specified operation against the original effect.
+Effects are immutable values, pretty similar to Scala immutable types like `Option`, `Either`, `Try`, `List`, etc.
+Methods on tese types give you a new value, the result of applying a specific operation to it. An example is mapping over `Option` or `List`, which will give you back new `Option` or `List`. Likewise, every operation on a ZIO effect will produce a new effect as a result of specified operation against the original effect.
 
-The effect is a workflow that can represent sequential, asynchronous, concurrent, parallel, or some computation that will allocate resources and safely free them after use. The effects are purely descriptive and lazy. They don't do anything, just describing workflows.
+An effect is a workflow that can represent a sequential, asynchronous, concurrent, or parallel computation that will allocate resources and safely free them after use. Effects are purely descriptive and lazy. They don't do anything, just describing workflows.
 Effects are composable, which means that we can combine them in numerous ways, using methods defined on them, and as a result of composition, we will get a completely new effect. Effects are used to model some common operations or sequence of operations, like database interaction, RPC calls, WebSocket connections, etc. Besides all of that, we can use effects to model failures, recovery, scheduling, resource management (allocation and deallocation), etc.
 
 
 ## Simplified ZIO Implementation
 
-First, let's define ZIO type with a few basic combinators.
+First, let's define a ```ZIO``` type with a few basic combinators.
 
 ```scala
 final case class ZIO[-R, +E, +A](run: R => Either[E, A]) { self =>
@@ -96,7 +96,7 @@ object ZIO {
 
 Now, let's implement our helper methods.
 
-From method definition you can see that `succeed` effect that we are building doesn't require anything, it can't fail, and it's going to succeed with a value of type `A`.
+From method definition you can see that the `succeed` effect that we are building doesn't require anything, it can't fail, and it's going to succeed with a value of type `A`.
 
 ```scala
 def succeed[A](a: => A): ZIO[Any, Nothing, A] =
@@ -117,17 +117,17 @@ In a similar fashion, the `fail` effect is constructed. It's an effect that does
 If you are not familiar with `Either` it's a type that comes from the Scala standard library and it represents a value of one of two possible types (a disjoint union). Instances of `Either` are either an instance of `Left` or `Right`, and they represent failure and success respectively.
 
 After implementation of pretty simple effect constructors, we encountered `effect` method, which is more interesting than the previous ones.
-This method captures a piece of code that performs some side effect (interaction with the file system, database, web server, etc.) and defers it's execution. The problem with side-effects is that they are doing, not describing, and in functional programming, we want to defer interaction with the real world as long as possible. We are using [by name parameters](https://docs.scala-lang.org/tour/by-name-parameters.html), which means that what is in the parameter list won't be evaluated immediately, it will be stored into something that is called a thunk, and it will be evaluated much later when the effect is executed. Thunk is a pointer to a function that executes some code, and it's a way to make the execution of some code lazy. This technique allows us to take a side-effectful code that is eager and turn it into lazy description.
+This method captures a piece of code that performs some side effect (interaction with the file system, database, web server, etc.) and defers it's execution. The problem with side-effects is that they are doing, not describing, and in functional programming we want to defer interaction with the real world as long as possible. We are using [by-name parameters](https://docs.scala-lang.org/tour/by-name-parameters.html), which means that what is in the parameter list won't be evaluated immediately, it will be stored into something that is called a thunk, and it will be evaluated much later when the effect is executed. Thunk is a pointer to a function that executes some code, and it's a way to make the execution of some code lazy. This technique allows us to take some side-effectful code that is eager and turn it into a lazy description.
 
 
 ```scala
 def effect[A](sideEffect: => A): ZIO[Any, Throwable, A] =
     ZIO(_ => Try(sideEffect).toEither)
 ```
-From method definition, you can see that `effect` method, which is used to convert eager code to a lazy description, doesn't require anything.
-As an argument, we have a piece of code that performs a side effect. Side-effectful code may throw an exception, and we want to translate it into failure value. The implementation of `effect` is simple, we will ignore the environment, since we don't need any, and just try to execute a thunk that is passed as a method argument, and translate it into failure or success.
+From the method definition, you can see that the `effect` method, which is used to convert eager code to a lazy description, doesn't require anything.
+As an argument, we have a piece of code that performs a side effect. Side-effectful code may throw an exception, and we want to translate it into a failure value. The implementation of `effect` is simple: we will ignore the environment, since we don't need any, and just try to execute a thunk that is passed as a method argument, and translate it into failure or success.
 
-Here we have `environment` method that builds an effect that requires `R` and succeeds with a value of type `R`. This method is used to describe an effect that will need an `R` in order to be executed and to introduce the concrete type for `R`.
+Here we have an `environment` method that builds an effect that requires `R` and succeeds with a value of type `R`. This method is used to describe an effect that will need an `R` in order to be executed and to introduce the concrete type for `R`.
 
 ```scala
 def environment[R]: ZIO[R, Nothing, R] = 
@@ -140,9 +140,9 @@ def environment[R]: ZIO[R, Nothing, R] =
 def access[R, A](f: R => A): ZIO[R, Nothing, A] = 
     ZIO(r => Right(f(r)))
 ```
-In order to implement `access` method we are going to use `r` which represents our environment, feed that `r` into our function `f` in order to get `A`, and lift that result into `Either`, using `Right` constructor, since this effect can't fail.
+In order to implement the `access` method we are going to use `r` which represents our environment, feed that `r` into our function `f` in order to get `A`, and lift that result into `Either`, using `Right` constructor, since this effect can't fail.
 
-The final method in our companion object is `accessM` which represents an effectful version of the `access` method. You noticed `M` suffix, which is used to identify effectful version of some method. This just means that method with the suffix `M` will accept a function that returns effects instead of plain value.
+The final method in our companion object is `accessM` which represents an effectful version of the `access` method. You noticed `M` suffix, which is used to identify effectful version of some method. This just means that any method with the suffix `M` will accept a function that returns effects instead of a plain value.
 
 ```scala
 def accessM[R, E, A](f: R => ZIO[R, E, A]): ZIO[R, E, A] = 
@@ -162,7 +162,7 @@ def map[B](f: A => B): ZIO[R, E, B] =
 
 After running the current ZIO effect with `r`, we are getting `Either[E, A]` as a result. Then we are mapping over `Either` with a given function `f: A => B`. The result is a new effect that can succeed with a value of type `B`.
 
-The next combinator is the famous `flatMap`, which allows us to combine context-sensitive, sequential operations. Method definition looks scary, but essentially receives a function that will lift the plain value of type `A` into a ZIO effect.
+The next combinator is the famous `flatMap`, which allows us to combine context-sensitive, sequential operations. The method definition looks scary, but  it essentially receives a function that will lift the plain value of type `A` into a ZIO effect.
 
 ```scala
 def flatMap[R1 <: R, E1 >: E, B]
@@ -189,7 +189,7 @@ def either: ZIO[R, Nothing, Either[E, A]] =
 
 As our effect that represents the output of `either` can't fail, we are just running our current `ZIO` effect, and lift result into `Either` using `Right` constructor.
 
-The next combinator `provide` is used to remove environment dependacy from the current effect.
+The next combinator `provide` is used to remove the environment dependency from the current effect.
 
 ```scala
 def provide(r: R): ZIO[Any, E, A] =
@@ -205,14 +205,14 @@ def orDie(implicit ev: E <:< Throwable): ZIO[R, Nothing, A] =
     ZIO(r => self.run(r).fold(throw _, Right(_)))
 ```
 
-This combinator removes error parameter in a next way:
+This combinator removes the error parameter in the following way:
 
 * Effect is run with `r` and result will be `Either[E, A]`
 * After that we are folding over `Either`
-* If effect failt it will throw an exception
-* If not, we will wrap success value into `Right`
+* If the effect failed it will throw an exception
+* If not, we will wrap the success value into `Right`
 
-This combinator is useful when there is a possibility of fatal error that we are not able to recover from.
+This combinator is useful when there is a possibility of fatal errors that we are not able to recover from.
 
 We managed to implement our very primitive version of `ZIO` effect type. Let's try to write some simple console application that will ask user for a name and print it out.
 
@@ -225,7 +225,7 @@ def putStrLn(line: String): ZIO[Any, Nothing, Unit] =
     ZIO.effect(println(line)).orDie
 ```
 
-Next effect that we are going to need is effect that will print out name that user entered.
+The next effect that we are going to need is an effect that will print out the name that the user entered.
 
 ```scala
 val readLine: ZIO[Any, Nothing, String] =
@@ -236,21 +236,21 @@ You noticed that we create two effects that can't fail using `effect` constructo
 
 ```scala
 val program: ZIO[Any, Throwable, Unit] =
-  putStrLn("Hellow, what is your name?").flatMap { _ =>
+  putStrLn("Hello, what is your name?").flatMap { _ =>
     readLine.flatMap(name => putStrLn(s"Your name is: $name"))
   }
 ```
 
 As we mentioned earlier effects are just immutable values that are describing workflows, they don't do anything. In functional programming all problems are solved using values.
 
-Finally, we need to create a method that will take `ZIO` effect type and execute it, in order to get a plain value.
+Finally, we need to create a method that will take the `ZIO` effect type and execute it, in order to get a plain value.
 
 ```scala
 def unsafeRun[A](zio: ZIO[Any, Throwable, A]): A =
     zio.run(()).fold(throw _, a => a)
 ```
 
-Our effect doesn't require anything in order to run so we are just passing a `Unit` value to `run` method. We are getting `Either[Throwable, A]` and after folding over it,  we finally have do deal with the exception. If we get an instance of `Throwable` we will just throw it, and if we get success value of type `A` we will return it.
+Our effect doesn't require anything in order to run so we are just passing a `Unit` value to `run` method. We are getting `Either[Throwable, A]` and after folding over it,  we finally have to deal with the exception. If we get an instance of `Throwable` we will just throw it, and if we get success value of type `A` we will return it.
 
 Our main function will look like this:
 
@@ -258,7 +258,7 @@ Our main function will look like this:
 def main(args: Array[String]): Unit =
     unsafeRun(program)
 ```
-We started by defining multiple effects. After that we combined them and end up with one final effect. If we want to run an effect, that means that we need to translate the description of a workflow into actual actions that are described using a method called `unsafeRun`. Usage of prefix `unsafe` means that this is no longer functional programming and it's indicating that we are on the edge between purely functional programming and procedural programming. `unsafeRun` function or method is not function in a sense of functional programming since it performs side-effect, may not be deterministic and can throw an exception if executed. Using `unsafeRun` represents the final step before famous end of the (*functional*) world.
+We started by defining multiple effects. After that we combined them and end up with one final effect. If we want to run an effect, that means that we need to translate the description of a workflow into actual actions that are described using a method called `unsafeRun`. Usage of prefix `unsafe` means that this is no longer functional programming and it's indicating that we are on the edge between purely functional programming and procedural programming. `unsafeRun` function or method is not a function in the sense of functional programming since it performs a side-effect, may not be deterministic, and can throw an exception if executed. Using `unsafeRun` represents the final step before famous end of the (*functional*) world.
 It’s good practice to use this function as little as possible. Ideally, it would be only once.
 
 
@@ -329,7 +329,7 @@ object App {
 
 ## Summary
 
-We reviewed some of the most popular options for functional programming on JVM and especially in the Scala ecosystem since it's the most powerful language on JVM for functional programming. After that, we introduced ZIO and explained what functional effects are, by implementing a simplified version of ZIO. In some of the next blog post, the focus will be on ZIO and solving real-world problems with it. If you are getting started and want to know more about ZIO you can start by reading [A Brief History of ZIO](https://degoes.net/articles/zio-history).
+We reviewed some of the most popular options for functional programming on JVM and especially in the Scala ecosystem since it's the most powerful language on JVM for functional programming. After that, we introduced ZIO and explained what functional effects are, by implementing a simplified version of ZIO. In some of the next blog posts, the focus will be on ZIO and solving real-world problems with it. If you are getting started and want to know more about ZIO you can start by reading [A Brief History of ZIO](https://degoes.net/articles/zio-history).
 
 The motivation for writing this blog post comes from [Functional Effects Training by Ziverge](https://ziverge.com/training/fs-effects) and I recommend it to everyone serious about learning more about functional programming and ZIO especially.
 [ZIO community](https://github.com/zio) is very welcoming, so feel free to join on [Discord channel](https://discord.com/invite/2ccFBr4) if you are interested in it, or even want to start contributing.
