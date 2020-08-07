@@ -18,4 +18,9 @@ var store = [{
         "excerpt":"There are lots of different definitions of what functional programming is. For people new to it, it can be really hard to understand what it actually is, since there is a plethora of materials related to it. You will rarely find one that will clearly present basics and give you...","categories": [],
         "tags": ["java","jvm","fp"],
         "url": "http://localhost:4000/a-taste-of-functional-java/",
+        "teaser":null},{
+        "title": "Functional Effects with ZIO",
+        "excerpt":"ZIO 1.0 is finally released after three years of active development and more than 300 contributors, so I decided to write a practical introduction to ZIO and functional effects.In my last article, I was talking about some basic concepts related to functional programming.We already know that Java is not a...","categories": [],
+        "tags": ["scala","jvm","zio","fp"],
+        "url": "http://localhost:4000/functional-effects-with-zio/",
         "teaser":null}]

@@ -1,0 +1,867 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.9.0 by Michael Rose
+  Copyright 2013-2018 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE.txt
+-->
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Functional Effects with ZIO - Aleksandar Skrbic</title>
+<meta name="description" content="Scala, JVM, ZIO, Functional Programming">
+
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Aleksandar Skrbic">
+<meta property="og:title" content="Functional Effects with ZIO">
+<meta property="og:url" content="http://localhost:4000/functional-effects-with-zio/">
+
+
+  <meta property="og:description" content="Scala, JVM, ZIO, Functional Programming">
+
+
+
+  <meta property="og:image" content="http://localhost:4000/images/zio-header.jpg">
+
+
+
+
+
+  <meta property="article:published_time" content="2020-08-07T00:00:00+02:00">
+
+
+
+
+
+  
+
+  
+
+
+<link rel="canonical" href="http://localhost:4000/functional-effects-with-zio/">
+
+
+
+
+
+
+
+  <script type="application/ld+json">
+    {
+      "@context": "http://schema.org",
+      "@type": "Person",
+      "name": "Aleksandar Skrbic",
+      "url": "http://localhost:4000",
+      "sameAs": null
+    }
+  </script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+<link href="http://localhost:4000/feed.xml" type="application/atom+xml" rel="alternate" title="Aleksandar Skrbic Feed">
+
+<!-- http://t.co/dKP3o1e -->
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="http://localhost:4000/assets/css/main.css">
+
+<!--[if lte IE 9]>
+  <style>
+    /* old IE unsupported flexbox fixes */
+    .greedy-nav .site-title {
+      padding-right: 3em;
+    }
+    .greedy-nav button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 100%;
+    }
+  </style>
+<![endif]-->
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use http://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+  </head>
+
+  <body class="layout--single">
+
+    <!--[if lt IE 9]>
+<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+<![endif]-->
+
+    <div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        <a class="site-title" href="http://localhost:4000/">Aleksandar Skrbic</a>
+        <ul class="visible-links">
+          
+            
+            <li class="masthead__menu-item">
+              <a href="http://localhost:4000/search/" >Search Articles</a>
+            </li>
+          
+            
+            <li class="masthead__menu-item">
+              <a href="http://localhost:4000/about/" >About</a>
+            </li>
+          
+        </ul>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle Menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+    <div class="initial-content">
+      
+  
+
+
+
+
+
+
+
+
+
+
+
+<div class="page__hero"
+  style=" "
+>
+  
+    <img src="http://localhost:4000/images/zio-header.jpg" alt="Functional Effects with ZIO" class="page__hero-image">
+  
+  
+</div>
+
+
+
+
+
+<div id="main" role="main">
+  
+  <div class="sidebar sticky">
+  
+
+
+<div itemscope itemtype="http://schema.org/Person">
+
+  
+
+  <div class="author__content">
+    
+      <h3 class="author__name" itemprop="name">Aleksandar Skrbic</h3>
+    
+    
+      <p class="author__bio" itemprop="description">
+        Blogging mostly about distributed systems, databases and big data.
+      </p>
+    
+  </div>
+
+  <div class="author__urls-wrapper">
+    <button class="btn btn--inverse">Follow</button>
+    <ul class="author__urls social-icons">
+      
+        <li itemprop="homeLocation" itemscope itemtype="http://schema.org/Place">
+          <i class="fas fa-fw fa-map-marker-alt" aria-hidden="true"></i> <span itemprop="name">Novi Sad, Serbia</span>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="mailto:skrbic.alexa@gmail.com">
+            <meta itemprop="email" content="skrbic.alexa@gmail.com" />
+            <i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i> Email
+          </a>
+        </li>
+      
+
+      
+
+      
+        <li>
+          <a href="https://twitter.com/skrbic_a" itemprop="sameAs">
+            <i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i> Twitter
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://www.linkedin.com/in/aleksandar-skrbic" itemprop="sameAs">
+            <i class="fab fa-fw fa-linkedin" aria-hidden="true"></i> LinkedIn
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+        <li>
+          <a href="https://github.com/aleksandarskrbic" itemprop="sameAs">
+            <i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub
+          </a>
+        </li>
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      
+
+      <!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+    </ul>
+  </div>
+</div>
+
+  
+  </div>
+
+
+  <article class="page" itemscope itemtype="http://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Functional Effects with ZIO">
+    <meta itemprop="description" content="Scala, JVM, ZIO, Functional Programming">
+    <meta itemprop="datePublished" content="August 07, 2020">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 class="page__title" itemprop="headline">Functional Effects with ZIO
+</h1>
+          
+            <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  15 minute read
+</p>
+          
+        </header>
+      
+
+      <section class="page__content" itemprop="text">
+        
+        <p class="text-left"><a href="https://www.linkedin.com/pulse/zio-10-released-john-de-goes/">ZIO 1.0</a> is finally released after three years of active development and more than 300 contributors, so I decided to write a practical introduction to ZIO and functional effects.</p>
+
+<p>In my <a href="/a-taste-of-functional-java/">last article</a>, I was talking about some basic concepts related to functional programming.
+We already know that Java is not a good fit for purely functional programming and there are no libraries that can help you with that, but you can use <a href="https://www.vavr.io/">Vavr</a> in order to make your codebase more functional. This style is often referenced as object-functional programming.</p>
+
+<p>As a result of extremely slow evolution of Java, we got modernized alternatives, which are also more suitable for functional programming. One of them is Kotlin with <a href="https://arrow-kt.io/">Arrow</a> library which seems good to me, but Scala is the most popular and most mature choice for functional programming on the JVM, with a few high quality libraries.
+I’m recommending you to read <a href="https://scalac.io/why-does-scala-win-against-kotlin-senior-engineers-opinion/">this article</a> if you are interested in the comparison between Scala and Kotlin.</p>
+
+<p><a href="https://zio.dev/">ZIO</a>, <a href="https://typelevel.org/cats-effect/">Cats Effect</a>, and <a href="https://monix.io/">Monix</a> are top three functional effects systems for Scala. Of course, there is a <a href="https://scalaz.github.io/7/">Scalaz</a>, which was an inspiration for these libraries, but I have a feeling that the popularity of it declining. In this article, I will try to explain what functional effects are and what are the benefits of using them. For all examples, I will be using Scala with <a href="https://zio.dev/">ZIO</a>.</p>
+
+<h2 id="zio-in-a-nutshell">ZIO In a Nutshell</h2>
+
+<p>ZIO is a Scala library that provides you a lot of features for developing concurrent, parallel, asynchronous, and resources safe code in a purely functional and simpler way. Basically, ZIO can provide everything that is necessary for building any modern, highly-concurrent application.</p>
+
+<p>Core type in ZIO library is called <code class="language-plaintext highlighter-rouge">ZIO</code> and it has three type parameters.
+Here is the example of a pretty simplified model of the ZIO effect type. Real implementation is much more complex.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">final</span> <span class="k">case</span> <span class="k">class</span> <span class="nc">ZIO</span><span class="o">[</span><span class="kt">-R</span>, <span class="kt">+E</span>, <span class="kt">+A</span><span class="o">](</span><span class="n">run</span><span class="k">:</span> <span class="kt">R</span> <span class="o">=&gt;</span> <span class="nc">Either</span><span class="o">[</span><span class="kt">E</span>, <span class="kt">A</span><span class="o">])</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">ZIO</code> type is just a case class that contains a function.
+The function takes a value of type <code class="language-plaintext highlighter-rouge">R</code> and produces either an error on the left-hand side or success on the right-hand side of types <code class="language-plaintext highlighter-rouge">E</code> and <code class="language-plaintext highlighter-rouge">A</code> respectively.</p>
+
+<p>Let’s see what is ZIO really about and demystify the type parameters:</p>
+<ul>
+  <li><strong>R</strong> - Environment Type. The effect may need some dependency of type <code class="language-plaintext highlighter-rouge">R</code> in order to be executed. If this type parameter is <code class="language-plaintext highlighter-rouge">Any</code>, it means
+that effect has not requirements.</li>
+  <li><strong>E</strong> - Failure Type. The effect may fail with some value of type <code class="language-plaintext highlighter-rouge">E</code>. If this type parameter is <code class="language-plaintext highlighter-rouge">Nothing</code>, it means the effect cannot fail, because there are no values of type <code class="language-plaintext highlighter-rouge">Nothing</code>.</li>
+  <li><strong>A</strong> - Success Type. The effect may succeed with a value of type <code class="language-plaintext highlighter-rouge">A</code>. If this type parameter is <code class="language-plaintext highlighter-rouge">Unit</code>, it means the effect produces no useful information, while if it is <code class="language-plaintext highlighter-rouge">Nothing</code>, it means the effect runs forever (or until failure).</li>
+</ul>
+
+<p>Type parameters explained again, through example.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">effect</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Connection</span>, <span class="kt">UserNotFoundError</span>, <span class="kt">User</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+</code></pre></div></div>
+<p>We defined ZIO effect that reads something from the database. In order to run, the effect will need <code class="language-plaintext highlighter-rouge">Connection</code>. It can fail with <code class="language-plaintext highlighter-rouge">UserNotFoundError</code>, and can succeed with <code class="language-plaintext highlighter-rouge">User</code>. Note that ZIO effects can fail with any subtype of Throwable or any user-defined ADT, depending on the programmer’s choice of how to represent failures in their applications.</p>
+
+<h2 id="effects-are-workflows">Effects are workflows</h2>
+
+<p>The effects are immutable values, pretty similar to Scala immutable types like <code class="language-plaintext highlighter-rouge">Option</code>, <code class="language-plaintext highlighter-rouge">Either</code>, <code class="language-plaintext highlighter-rouge">Try</code>, <code class="language-plaintext highlighter-rouge">List</code>, etc.
+Methods on them give you a new value, that applies a specific operation on it. An example is mapping over <code class="language-plaintext highlighter-rouge">Option</code> or <code class="language-plaintext highlighter-rouge">List</code>, which will give you back new <code class="language-plaintext highlighter-rouge">Option</code> or <code class="language-plaintext highlighter-rouge">List</code>. Likewise, every operation on ZIO effect will produce new effect as a result of specified operation against the original effect.</p>
+
+<p>The effect is a workflow that can represent sequential, asynchronous, concurrent, parallel, or some computation that will allocate resources and safely free them after use. The effects are purely descriptive and lazy. They don’t do anything, just describing workflows.
+Effects are composable, which means that we can combine them in numerous ways, using methods defined on them, and as a result of composition, we will get a completely new effect. Effects are used to model some common operations or sequence of operations, like database interaction, RPC calls, WebSocket connections, etc. Besides all of that, we can use effects to model failures, recovery, scheduling, resource management (allocation and deallocation), etc.</p>
+
+<h2 id="simplified-zio-implementation">Simplified ZIO Implementation</h2>
+
+<p>First, let’s define ZIO type with a few basic combinators.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">final</span> <span class="k">case</span> <span class="k">class</span> <span class="nc">ZIO</span><span class="o">[</span><span class="kt">-R</span>, <span class="kt">+E</span>, <span class="kt">+A</span><span class="o">](</span><span class="n">run</span><span class="k">:</span> <span class="kt">R</span> <span class="o">=&gt;</span> <span class="nc">Either</span><span class="o">[</span><span class="kt">E</span>, <span class="kt">A</span><span class="o">])</span> <span class="o">{</span> <span class="n">self</span> <span class="k">=&gt;</span>
+    <span class="k">def</span> <span class="nf">map</span><span class="o">[</span><span class="kt">B</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">A</span> <span class="o">=&gt;</span> <span class="n">B</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">B</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+
+    <span class="k">def</span> <span class="nf">flatMap</span><span class="o">[</span><span class="kt">R1</span> <span class="k">&lt;:</span> <span class="kt">R</span>, <span class="kt">E1</span> <span class="k">&gt;:</span> <span class="kt">E</span>, <span class="kt">B</span><span class="o">]</span>
+        <span class="o">(</span><span class="n">f</span><span class="k">:</span> <span class="kt">A</span> <span class="o">=&gt;</span> <span class="nc">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="kt">B</span><span class="o">])</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="kt">B</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+
+    <span class="k">def</span> <span class="nf">zip</span><span class="o">[</span><span class="kt">R1</span> <span class="k">&lt;:</span> <span class="kt">R</span>, <span class="kt">E1</span> <span class="k">&gt;:</span> <span class="kt">E</span>, <span class="kt">B</span><span class="o">]</span>
+        <span class="o">(</span><span class="n">that</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="kt">B</span><span class="o">])</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="o">(</span><span class="kt">A</span>, <span class="kt">B</span><span class="o">)]</span> <span class="k">=</span> <span class="o">???</span>
+
+    <span class="k">def</span> <span class="nf">either</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">Either</span><span class="o">[</span><span class="kt">E</span>, <span class="kt">A</span><span class="o">]]</span> <span class="k">=</span> <span class="o">???</span>
+
+    <span class="k">def</span> <span class="nf">provide</span><span class="o">(</span><span class="n">r</span><span class="k">:</span> <span class="kt">R</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+
+    <span class="k">def</span> <span class="nf">orDie</span><span class="o">(</span><span class="k">implicit</span> <span class="n">ev</span><span class="k">:</span> <span class="kt">E</span> <span class="k">&lt;:</span><span class="kt">&lt;</span> <span class="kt">Throwable</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>In ZIO companion objects, a few helper methods are defined in order to construct effects.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">ZIO</span> <span class="o">{</span>
+    <span class="k">def</span> <span class="nf">succeed</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">a</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">A</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Nothing</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+
+    <span class="k">def</span> <span class="nf">fail</span><span class="o">[</span><span class="kt">E</span><span class="o">](</span><span class="n">e</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">E</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">E</span>, <span class="kt">Nothing</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+
+    <span class="k">def</span> <span class="nf">effect</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">sideEffect</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">A</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Throwable</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+
+    <span class="k">def</span> <span class="nf">environment</span><span class="o">[</span><span class="kt">R</span><span class="o">]</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">R</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+
+    <span class="k">def</span> <span class="nf">access</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">A</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">R</span> <span class="o">=&gt;</span> <span class="n">A</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+
+    <span class="k">def</span> <span class="nf">accessM</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">R</span> <span class="o">=&gt;</span> <span class="nc">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">])</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span> <span class="o">???</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Now, let’s implement our helper methods.</p>
+
+<p>From method definition you can see that <code class="language-plaintext highlighter-rouge">succeed</code> effect that we are building doesn’t require anything, it can’t fail, and it’s going to succeed with a value of type <code class="language-plaintext highlighter-rouge">A</code>.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">succeed</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">a</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">A</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Nothing</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span>
+    <span class="nc">ZIO</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(</span><span class="n">a</span><span class="o">))</span>
+</code></pre></div></div>
+
+<p>In order to construct the effect, we need to use ZIO effect constructor, which requires function: <code class="language-plaintext highlighter-rouge">R =&gt; Either[E, A]</code>.
+Since our effect doesn’t have any environment dependencies, in a ZIO constructor we are ignoring environment type, and just use <code class="language-plaintext highlighter-rouge">Right</code> constructor to lift our value of type <code class="language-plaintext highlighter-rouge">A</code> into <code class="language-plaintext highlighter-rouge">Either</code>, which is required output type.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">fail</span><span class="o">[</span><span class="kt">E</span><span class="o">](</span><span class="n">e</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">E</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">E</span>, <span class="kt">Nothing</span><span class="o">]</span> <span class="k">=</span>
+    <span class="nc">ZIO</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">Left</span><span class="o">(</span><span class="n">e</span><span class="o">))</span>
+</code></pre></div></div>
+
+<p>In a similar fashion, the <code class="language-plaintext highlighter-rouge">fail</code> effect is constructed. It’s an effect that doesn’t require anything, can’t succeed, but can fail with the value of type <code class="language-plaintext highlighter-rouge">E</code>. So, it’s just the opposite of our <code class="language-plaintext highlighter-rouge">succeed</code> effect and implementation is similar, we are lifting our error into <code class="language-plaintext highlighter-rouge">Either</code> using <code class="language-plaintext highlighter-rouge">Left</code> constructor.</p>
+
+<p>If you are not familiar with <code class="language-plaintext highlighter-rouge">Either</code> it’s a type that comes from the Scala standard library and it represents a value of one of two possible types (a disjoint union). Instances of <code class="language-plaintext highlighter-rouge">Either</code> are either an instance of <code class="language-plaintext highlighter-rouge">Left</code> or <code class="language-plaintext highlighter-rouge">Right</code>, and they represent failure and success respectively.</p>
+
+<p>After implementation of pretty simple effect constructors, we encountered <code class="language-plaintext highlighter-rouge">effect</code> method, which is more interesting than the previous ones.
+This method captures a piece of code that performs some side effect (interaction with the file system, database, web server, etc.) and defers it’s execution. The problem with side-effects is that they are doing, not describing, and in functional programming, we want to defer interaction with the real world as long as possible. We are using <a href="https://docs.scala-lang.org/tour/by-name-parameters.html">by name parameters</a>, which means that what is in the parameter list won’t be evaluated immediately, it will be stored into something that is called a thunk, and it will be evaluated much later when the effect is executed. Thunk is a pointer to a function that executes some code, and it’s a way to make the execution of some code lazy. This technique allows us to take a side-effectful code that is eager and turn it into lazy description.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">effect</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">sideEffect</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">A</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Throwable</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span>
+    <span class="nc">ZIO</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">Try</span><span class="o">(</span><span class="n">sideEffect</span><span class="o">).</span><span class="py">toEither</span><span class="o">)</span>
+</code></pre></div></div>
+<p>From method definition, you can see that <code class="language-plaintext highlighter-rouge">effect</code> method, which is used to convert eager code to a lazy description, doesn’t require anything.
+As an argument, we have a piece of code that performs a side effect. Side-effectful code may throw an exception, and we want to translate it into failure value. The implementation of <code class="language-plaintext highlighter-rouge">effect</code> is simple, we will ignore the environment, since we don’t need any, and just try to execute a thunk that is passed as a method argument, and translate it into failure or success.</p>
+
+<p>Here we have <code class="language-plaintext highlighter-rouge">environment</code> method that builds an effect that requires <code class="language-plaintext highlighter-rouge">R</code> and succeeds with a value of type <code class="language-plaintext highlighter-rouge">R</code>. This method is used to describe an effect that will need an <code class="language-plaintext highlighter-rouge">R</code> in order to be executed and to introduce the concrete type for <code class="language-plaintext highlighter-rouge">R</code>.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">environment</span><span class="o">[</span><span class="kt">R</span><span class="o">]</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">R</span><span class="o">]</span> <span class="k">=</span> 
+    <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(</span><span class="n">r</span><span class="o">))</span>
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">access</code> is a method that is going to allow us to take the environment of the type <code class="language-plaintext highlighter-rouge">R</code> using a provided function <code class="language-plaintext highlighter-rouge">f</code> and project some piece of information from that of type <code class="language-plaintext highlighter-rouge">A</code>.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">access</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">A</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">R</span> <span class="o">=&gt;</span> <span class="n">A</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span> 
+    <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(</span><span class="nf">f</span><span class="o">(</span><span class="n">r</span><span class="o">)))</span>
+</code></pre></div></div>
+<p>In order to implement <code class="language-plaintext highlighter-rouge">access</code> method we are going to use <code class="language-plaintext highlighter-rouge">r</code> which represents our environment, feed that <code class="language-plaintext highlighter-rouge">r</code> into our function <code class="language-plaintext highlighter-rouge">f</code> in order to get <code class="language-plaintext highlighter-rouge">A</code>, and lift that result into <code class="language-plaintext highlighter-rouge">Either</code>, using <code class="language-plaintext highlighter-rouge">Right</code> constructor, since this effect can’t fail.</p>
+
+<p>The final method in our companion object is <code class="language-plaintext highlighter-rouge">accessM</code> which represents an effectful version of the <code class="language-plaintext highlighter-rouge">access</code> method. You noticed <code class="language-plaintext highlighter-rouge">M</code> suffix, which is used to identify effectful version of some method. This just means that method with the suffix <code class="language-plaintext highlighter-rouge">M</code> will accept a function that returns effects instead of plain value.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">accessM</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">R</span> <span class="o">=&gt;</span> <span class="nc">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">])</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span> 
+    <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nf">f</span><span class="o">(</span><span class="n">r</span><span class="o">).</span><span class="py">run</span><span class="o">(</span><span class="n">r</span><span class="o">))</span>
+</code></pre></div></div>
+
+<p>Implementation can be tricky, but just try to follow the types and there shouldn’t be any problems.</p>
+
+<p>We’ve finished implementation of methods that helps us to build a wide range of effects. The next step is to implement basic combinators for our <code class="language-plaintext highlighter-rouge">ZIO</code> effect type, which will allow us to combine and transform our effects.</p>
+
+<p>The most common combinator in functional libraries is a <code class="language-plaintext highlighter-rouge">map</code> of course. It receives a function that transforms our success value of type <code class="language-plaintext highlighter-rouge">A</code> to the success value of type <code class="language-plaintext highlighter-rouge">B</code>. So for a given function that turns <code class="language-plaintext highlighter-rouge">A</code> into <code class="language-plaintext highlighter-rouge">B</code> we need to be able to take current ZIO effect and return a new ZIO effect with success type transformed to <code class="language-plaintext highlighter-rouge">B</code>.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">map</span><span class="o">[</span><span class="kt">B</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">A</span> <span class="o">=&gt;</span> <span class="n">B</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">B</span><span class="o">]</span> <span class="k">=</span> 
+    <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nv">self</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">r</span><span class="o">).</span><span class="py">map</span><span class="o">(</span><span class="n">f</span><span class="o">))</span>
+</code></pre></div></div>
+
+<p>After running the current ZIO effect with <code class="language-plaintext highlighter-rouge">r</code>, we are getting <code class="language-plaintext highlighter-rouge">Either[E, A]</code> as a result. Then we are mapping over <code class="language-plaintext highlighter-rouge">Either</code> with a given function <code class="language-plaintext highlighter-rouge">f: A =&gt; B</code>. The result is a new effect that can succeed with a value of type <code class="language-plaintext highlighter-rouge">B</code>.</p>
+
+<p>The next combinator is the famous <code class="language-plaintext highlighter-rouge">flatMap</code>, which allows us to combine context-sensitive, sequential operations. Method definition looks scary, but essentially receives a function that will lift the plain value of type <code class="language-plaintext highlighter-rouge">A</code> into a ZIO effect.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">flatMap</span><span class="o">[</span><span class="kt">R1</span> <span class="k">&lt;:</span> <span class="kt">R</span>, <span class="kt">E1</span> <span class="k">&gt;:</span> <span class="kt">E</span>, <span class="kt">B</span><span class="o">]</span>
+    <span class="o">(</span><span class="n">f</span><span class="k">:</span> <span class="kt">A</span> <span class="o">=&gt;</span> <span class="nc">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="kt">B</span><span class="o">])</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="kt">B</span><span class="o">]</span> <span class="k">=</span> 
+        <span class="nc">ZIO</span><span class="o">(</span><span class="n">r1</span> <span class="k">=&gt;</span> <span class="nv">self</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">r1</span><span class="o">).</span><span class="py">flatMap</span><span class="o">(</span><span class="n">a</span> <span class="k">=&gt;</span> <span class="nf">f</span><span class="o">(</span><span class="n">a</span><span class="o">).</span><span class="py">run</span><span class="o">(</span><span class="n">r1</span><span class="o">)))</span>
+</code></pre></div></div>
+
+<p>In order to get <code class="language-plaintext highlighter-rouge">ZIO[R1, E1, B]</code>, we are running the current <code class="language-plaintext highlighter-rouge">ZIO</code> effect with <code class="language-plaintext highlighter-rouge">r1</code> which will give us <code class="language-plaintext highlighter-rouge">Either[E, A]</code>. Then we are flatMapping over <code class="language-plaintext highlighter-rouge">Either</code> in order to get <code class="language-plaintext highlighter-rouge">A</code> out of it. When we finally have <code class="language-plaintext highlighter-rouge">a</code> of type <code class="language-plaintext highlighter-rouge">A</code> we are feeding that into our function <code class="language-plaintext highlighter-rouge">f</code> that will give us back <code class="language-plaintext highlighter-rouge">ZIO[R1, E1, B]</code>. We need <code class="language-plaintext highlighter-rouge">Either[E1, B]</code>, so we will just run result of our function <code class="language-plaintext highlighter-rouge">f</code>, since it’s ZIO effect, in order to get what we need.</p>
+
+<p>The next combinator is <code class="language-plaintext highlighter-rouge">zip</code> which is used to combine two effects in order to get a new effect. It can be expressed via <code class="language-plaintext highlighter-rouge">flatMap</code> and <code class="language-plaintext highlighter-rouge">map</code> that we already implemented.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">zip</span><span class="o">[</span><span class="kt">R1</span> <span class="k">&lt;:</span> <span class="kt">R</span>, <span class="kt">E1</span> <span class="k">&gt;:</span> <span class="kt">E</span>, <span class="kt">B</span><span class="o">](</span><span class="n">that</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="kt">B</span><span class="o">])</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="o">(</span><span class="kt">A</span>, <span class="kt">B</span><span class="o">)]</span> <span class="k">=</span>
+    <span class="nv">self</span><span class="o">.</span><span class="py">flatMap</span><span class="o">(</span><span class="n">a</span> <span class="k">=&gt;</span> <span class="nv">that</span><span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">b</span> <span class="k">=&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="o">))</span>
+</code></pre></div></div>
+
+<p>You can use <code class="language-plaintext highlighter-rouge">either</code> combinator to move error channel into success channel in a form of the <code class="language-plaintext highlighter-rouge">Either</code>.
+With this combinator we are not removing error, it will be just translated into success channel.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">either</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">Either</span><span class="o">[</span><span class="kt">E</span>, <span class="kt">A</span><span class="o">]]</span> <span class="k">=</span>
+    <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(</span><span class="nv">self</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">r</span><span class="o">)))</span>
+</code></pre></div></div>
+
+<p>As our effect that represents the output of <code class="language-plaintext highlighter-rouge">either</code> can’t fail, we are just running our current <code class="language-plaintext highlighter-rouge">ZIO</code> effect, and lift result into <code class="language-plaintext highlighter-rouge">Either</code> using <code class="language-plaintext highlighter-rouge">Right</code> constructor.</p>
+
+<p>The next combinator <code class="language-plaintext highlighter-rouge">provide</code> is used to remove environment dependacy from the current effect.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">provide</span><span class="o">(</span><span class="n">r</span><span class="k">:</span> <span class="kt">R</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span>
+    <span class="nc">ZIO</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nv">self</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">r</span><span class="o">))</span>
+</code></pre></div></div>
+
+<p>We need to return <code class="language-plaintext highlighter-rouge">ZIO</code> effect that doesn’t require an environment. So we are just running our current effect with the environment of type <code class="language-plaintext highlighter-rouge">R</code> that is given as a method argument. What we have managed to do here is that we just transformed the effect that needed an <code class="language-plaintext highlighter-rouge">R</code> into effect that doesn’t require anything in order to be executed.</p>
+
+<p>The last combinator is called <code class="language-plaintext highlighter-rouge">orDie</code>. This strange looking definition says that this method can be called on effect that can fail only with some subtype of <code class="language-plaintext highlighter-rouge">Throwable</code>.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">orDie</span><span class="o">(</span><span class="k">implicit</span> <span class="n">ev</span><span class="k">:</span> <span class="kt">E</span> <span class="k">&lt;:</span><span class="kt">&lt;</span> <span class="kt">Throwable</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span>
+    <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nv">self</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">r</span><span class="o">).</span><span class="py">fold</span><span class="o">(</span><span class="k">throw</span> <span class="k">_</span><span class="o">,</span> <span class="nc">Right</span><span class="o">(</span><span class="k">_</span><span class="o">)))</span>
+</code></pre></div></div>
+
+<p>This combinator removes error parameter in a next way:</p>
+
+<ul>
+  <li>Effect is run with <code class="language-plaintext highlighter-rouge">r</code> and result will be <code class="language-plaintext highlighter-rouge">Either[E, A]</code></li>
+  <li>After that we are folding over <code class="language-plaintext highlighter-rouge">Either</code></li>
+  <li>If effect failt it will throw an exception</li>
+  <li>If not, we will wrap success value into <code class="language-plaintext highlighter-rouge">Right</code></li>
+</ul>
+
+<p>This combinator is useful when there is a possibility of fatal error that we are not able to recover from.</p>
+
+<p>We managed to implement our very primitive version of <code class="language-plaintext highlighter-rouge">ZIO</code> effect type. Let’s try to write some simple console application that will ask user for a name and print it out.</p>
+
+<h2 id="at-worlds-end">At World’s End</h2>
+
+<p>First we need to define an effect that will print some text on console.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">putStrLn</span><span class="o">(</span><span class="n">line</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Nothing</span>, <span class="kt">Unit</span><span class="o">]</span> <span class="k">=</span>
+    <span class="nv">ZIO</span><span class="o">.</span><span class="py">effect</span><span class="o">(</span><span class="nf">println</span><span class="o">(</span><span class="n">line</span><span class="o">)).</span><span class="py">orDie</span>
+</code></pre></div></div>
+
+<p>Next effect that we are going to need is effect that will print out name that user entered.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">readLine</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Nothing</span>, <span class="kt">String</span><span class="o">]</span> <span class="k">=</span>
+    <span class="nv">ZIO</span><span class="o">.</span><span class="py">effect</span><span class="o">(</span><span class="nv">scala</span><span class="o">.</span><span class="py">io</span><span class="o">.</span><span class="py">StdIn</span><span class="o">.</span><span class="py">readLine</span><span class="o">()).</span><span class="py">orDie</span>
+</code></pre></div></div>
+
+<p>You noticed that we create two effects that can’t fail using <code class="language-plaintext highlighter-rouge">effect</code> constructor and <code class="language-plaintext highlighter-rouge">orDie</code> combinator. Now, when we defined all effects needed for our program, we need to combine them, and finally write a function responsible for execution of our final effect that represents our whole application.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">program</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Throwable</span>, <span class="kt">Unit</span><span class="o">]</span> <span class="k">=</span>
+  <span class="nf">putStrLn</span><span class="o">(</span><span class="s">"Hellow, what is your name?"</span><span class="o">).</span><span class="py">flatMap</span> <span class="o">{</span> <span class="k">_</span> <span class="k">=&gt;</span>
+    <span class="nv">readLine</span><span class="o">.</span><span class="py">flatMap</span><span class="o">(</span><span class="n">name</span> <span class="k">=&gt;</span> <span class="nf">putStrLn</span><span class="o">(</span><span class="n">s</span><span class="s">"Your name is: $name"</span><span class="o">))</span>
+  <span class="o">}</span>
+</code></pre></div></div>
+
+<p>As we mentioned earlier effects are just immutable values that are describing workflows, they don’t do anything. In functional programming all problems are solved using values.</p>
+
+<p>Finally, we need to create a method that will take <code class="language-plaintext highlighter-rouge">ZIO</code> effect type and execute it, in order to get a plain value.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">unsafeRun</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">zio</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Throwable</span>, <span class="kt">A</span><span class="o">])</span><span class="k">:</span> <span class="kt">A</span> <span class="o">=</span>
+    <span class="nv">zio</span><span class="o">.</span><span class="py">run</span><span class="o">(()).</span><span class="py">fold</span><span class="o">(</span><span class="k">throw</span> <span class="k">_</span><span class="o">,</span> <span class="n">a</span> <span class="k">=&gt;</span> <span class="n">a</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>Our effect doesn’t require anything in order to run so we are just passing a <code class="language-plaintext highlighter-rouge">Unit</code> value to <code class="language-plaintext highlighter-rouge">run</code> method. We are getting <code class="language-plaintext highlighter-rouge">Either[Throwable, A]</code> and after folding over it,  we finally have do deal with the exception. If we get an instance of <code class="language-plaintext highlighter-rouge">Throwable</code> we will just throw it, and if we get success value of type <code class="language-plaintext highlighter-rouge">A</code> we will return it.</p>
+
+<p>Our main function will look like this:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span>
+    <span class="nf">unsafeRun</span><span class="o">(</span><span class="n">program</span><span class="o">)</span>
+</code></pre></div></div>
+<p>We started by defining multiple effects. After that we combined them and end up with one final effect. If we want to run an effect, that means that we need to translate the description of a workflow into actual actions that are described using a method called <code class="language-plaintext highlighter-rouge">unsafeRun</code>. Usage of prefix <code class="language-plaintext highlighter-rouge">unsafe</code> means that this is no longer functional programming and it’s indicating that we are on the edge between purely functional programming and procedural programming. <code class="language-plaintext highlighter-rouge">unsafeRun</code> function or method is not function in a sense of functional programming since it performs side-effect, may not be deterministic and can throw an exception if executed. Using <code class="language-plaintext highlighter-rouge">unsafeRun</code> represents the final step before famous end of the (<em>functional</em>) world.
+It’s good practice to use this function as little as possible. Ideally, it would be only once.</p>
+
+<h2 id="complete-code">Complete code</h2>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">final</span> <span class="k">case</span> <span class="k">class</span> <span class="nc">ZIO</span><span class="o">[</span><span class="kt">-R</span>, <span class="kt">+E</span>, <span class="kt">+A</span><span class="o">](</span><span class="n">run</span><span class="k">:</span> <span class="kt">R</span> <span class="o">=&gt;</span> <span class="nc">Either</span><span class="o">[</span><span class="kt">E</span>, <span class="kt">A</span><span class="o">])</span> <span class="o">{</span> <span class="n">self</span> <span class="k">=&gt;</span>
+    <span class="k">def</span> <span class="nf">map</span><span class="o">[</span><span class="kt">B</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">A</span> <span class="o">=&gt;</span> <span class="n">B</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">B</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nv">self</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">r</span><span class="o">).</span><span class="py">map</span><span class="o">(</span><span class="n">f</span><span class="o">))</span>
+
+    <span class="k">def</span> <span class="nf">flatMap</span><span class="o">[</span><span class="kt">R1</span> <span class="k">&lt;:</span> <span class="kt">R</span>, <span class="kt">E1</span> <span class="k">&gt;:</span> <span class="kt">E</span>, <span class="kt">B</span><span class="o">]</span>
+        <span class="o">(</span><span class="n">f</span><span class="k">:</span> <span class="kt">A</span> <span class="o">=&gt;</span> <span class="nc">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="kt">B</span><span class="o">])</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="kt">B</span><span class="o">]</span> <span class="k">=</span> 
+        <span class="nc">ZIO</span><span class="o">(</span><span class="n">r1</span> <span class="k">=&gt;</span> <span class="nv">self</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">r1</span><span class="o">).</span><span class="py">flatMap</span><span class="o">(</span><span class="n">a</span> <span class="k">=&gt;</span> <span class="nf">f</span><span class="o">(</span><span class="n">a</span><span class="o">).</span><span class="py">run</span><span class="o">(</span><span class="n">r1</span><span class="o">)))</span>
+
+    <span class="k">def</span> <span class="nf">zip</span><span class="o">[</span><span class="kt">R1</span> <span class="k">&lt;:</span> <span class="kt">R</span>, <span class="kt">E1</span> <span class="k">&gt;:</span> <span class="kt">E</span>, <span class="kt">B</span><span class="o">]</span>
+        <span class="o">(</span><span class="n">that</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="kt">B</span><span class="o">])</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R1</span>, <span class="kt">E1</span>, <span class="o">(</span><span class="kt">A</span>, <span class="kt">B</span><span class="o">)]</span> <span class="k">=</span> 
+        <span class="nv">self</span><span class="o">.</span><span class="py">flatMap</span><span class="o">(</span><span class="n">a</span> <span class="k">=&gt;</span> <span class="nv">that</span><span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">b</span> <span class="k">=&gt;</span> <span class="n">a</span> <span class="o">-&gt;</span> <span class="n">b</span><span class="o">))</span>
+
+    <span class="k">def</span> <span class="nf">either</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">Either</span><span class="o">[</span><span class="kt">E</span>, <span class="kt">A</span><span class="o">]]</span> <span class="k">=</span> 
+        <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(</span><span class="nv">self</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">r</span><span class="o">)))</span>
+
+    <span class="k">def</span> <span class="nf">provide</span><span class="o">(</span><span class="n">r</span><span class="k">:</span> <span class="kt">R</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nc">ZIO</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nv">self</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">r</span><span class="o">))</span>
+
+    <span class="k">def</span> <span class="nf">orDie</span><span class="o">(</span><span class="k">implicit</span> <span class="n">ev</span><span class="k">:</span> <span class="kt">E</span> <span class="k">&lt;:</span><span class="kt">&lt;</span> <span class="kt">Throwable</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nv">self</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">r</span><span class="o">).</span><span class="py">fold</span><span class="o">(</span><span class="k">throw</span> <span class="k">_</span><span class="o">,</span> <span class="nc">Right</span><span class="o">(</span><span class="k">_</span><span class="o">)))</span>
+<span class="o">}</span>
+
+<span class="k">object</span> <span class="nc">ZIO</span> <span class="o">{</span>
+    <span class="k">def</span> <span class="nf">succeed</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">a</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">A</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Nothing</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nc">ZIO</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(</span><span class="n">a</span><span class="o">))</span>
+
+    <span class="k">def</span> <span class="nf">fail</span><span class="o">[</span><span class="kt">E</span><span class="o">](</span><span class="n">e</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">E</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">E</span>, <span class="kt">Nothing</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nc">ZIO</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">Left</span><span class="o">(</span><span class="n">e</span><span class="o">))</span>
+
+    <span class="k">def</span> <span class="nf">effect</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">sideEffect</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">A</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Throwable</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nc">ZIO</span><span class="o">(</span><span class="k">_</span> <span class="k">=&gt;</span> <span class="nc">Try</span><span class="o">(</span><span class="n">sideEffect</span><span class="o">).</span><span class="py">toEither</span><span class="o">)</span>
+
+    <span class="k">def</span> <span class="nf">environment</span><span class="o">[</span><span class="kt">R</span><span class="o">]</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">R</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(</span><span class="n">r</span><span class="o">))</span>
+
+    <span class="k">def</span> <span class="nf">access</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">A</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">R</span> <span class="o">=&gt;</span> <span class="n">A</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">Nothing</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nc">Right</span><span class="o">(</span><span class="nf">f</span><span class="o">(</span><span class="n">r</span><span class="o">)))</span>
+
+    <span class="k">def</span> <span class="nf">accessM</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">R</span> <span class="o">=&gt;</span> <span class="nc">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">])</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">R</span>, <span class="kt">E</span>, <span class="kt">A</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nc">ZIO</span><span class="o">(</span><span class="n">r</span> <span class="k">=&gt;</span> <span class="nf">f</span><span class="o">(</span><span class="n">r</span><span class="o">).</span><span class="py">run</span><span class="o">(</span><span class="n">r</span><span class="o">))</span>
+<span class="o">}</span>
+
+<span class="k">object</span> <span class="nc">App</span> <span class="o">{</span>
+    <span class="k">def</span> <span class="nf">putStrLn</span><span class="o">(</span><span class="n">line</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Nothing</span>, <span class="kt">Unit</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nv">ZIO</span><span class="o">.</span><span class="py">effect</span><span class="o">(</span><span class="nf">println</span><span class="o">(</span><span class="n">line</span><span class="o">)).</span><span class="py">orDie</span>
+
+    <span class="k">val</span> <span class="nv">readLine</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Nothing</span>, <span class="kt">String</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nv">ZIO</span><span class="o">.</span><span class="py">effect</span><span class="o">(</span><span class="nv">scala</span><span class="o">.</span><span class="py">io</span><span class="o">.</span><span class="py">StdIn</span><span class="o">.</span><span class="py">readLine</span><span class="o">()).</span><span class="py">orDie</span>
+
+    <span class="k">val</span> <span class="nv">program</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Throwable</span>, <span class="kt">Unit</span><span class="o">]</span> <span class="k">=</span>
+        <span class="nf">putStrLn</span><span class="o">(</span><span class="s">"Hellow, what is your name?"</span><span class="o">).</span><span class="py">flatMap</span> <span class="o">{</span> <span class="k">_</span> <span class="k">=&gt;</span>
+            <span class="nv">readLine</span><span class="o">.</span><span class="py">flatMap</span><span class="o">(</span><span class="n">name</span> <span class="k">=&gt;</span> <span class="nf">putStrLn</span><span class="o">(</span><span class="n">s</span><span class="s">"Your name is: $name"</span><span class="o">))</span>
+        <span class="o">}</span>
+
+    <span class="k">def</span> <span class="nf">unsafeRun</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">zio</span><span class="k">:</span> <span class="kt">ZIO</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Throwable</span>, <span class="kt">A</span><span class="o">])</span><span class="k">:</span> <span class="kt">A</span> <span class="o">=</span>
+        <span class="nv">zio</span><span class="o">.</span><span class="py">run</span><span class="o">(()).</span><span class="py">fold</span><span class="o">(</span><span class="k">throw</span> <span class="k">_</span><span class="o">,</span> <span class="n">a</span> <span class="k">=&gt;</span> <span class="n">a</span><span class="o">)</span>
+
+    <span class="k">def</span> <span class="nf">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span> <span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span>
+        <span class="nf">unsafeRun</span><span class="o">(</span><span class="n">program</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="summary">Summary</h2>
+
+<p>We reviewed some of the most popular options for functional programming on JVM and especially in the Scala ecosystem since it’s the most powerful language on JVM for functional programming. After that, we introduced ZIO and explained what functional effects are, by implementing a simplified version of ZIO. In some of the next blog post, the focus will be on ZIO and solving real-world problems with it. If you are getting started and want to know more about ZIO you can start by reading <a href="https://degoes.net/articles/zio-history">A Brief History of ZIO</a>.</p>
+
+<p>The motivation for writing this blog post comes from <a href="https://ziverge.com/training/fs-effects">Functional Effects Training by Ziverge</a> and I recommend it to everyone serious about learning more about functional programming and ZIO especially.
+<a href="https://github.com/zio">ZIO community</a> is very welcoming, so feel free to join on <a href="https://discord.com/invite/2ccFBr4">Discord channel</a> if you are interested in it, or even want to start contributing.</p>
+
+<p>You can find me at:</p>
+<ul>
+  <li><a href="https://www.linkedin.com/in/aleksandar-skrbic/">Linkedin</a></li>
+  <li><a href="https://github.com/aleksandarskrbic">Github</a></li>
+</ul>
+
+<p>Or just send me a question to <a href="">skrbic.alexa@gmail.com</a></p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+  
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      
+      
+      <a href="http://localhost:4000/tags/#fp" class="page__taxonomy-item" rel="tag">fp</a><span class="sep">, </span>
+    
+      
+      
+      <a href="http://localhost:4000/tags/#jvm" class="page__taxonomy-item" rel="tag">jvm</a><span class="sep">, </span>
+    
+      
+      
+      <a href="http://localhost:4000/tags/#scala" class="page__taxonomy-item" rel="tag">scala</a><span class="sep">, </span>
+    
+      
+      
+      <a href="http://localhost:4000/tags/#zio" class="page__taxonomy-item" rel="tag">zio</a>
+    
+    </span>
+  </p>
+
+
+
+
+        
+          <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-08-07T00:00:00+02:00">August 07, 2020</time></p>
+        
+      </footer>
+
+      <section class="page__share">
+  
+    <h4 class="page__share-title">Share on</h4>
+  
+
+  <a href="https://twitter.com/intent/tweet?text=Functional+Effects+with+ZIO%20http%3A%2F%2Flocalhost%3A4000%2Ffunctional-effects-with-zio%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A4000%2Ffunctional-effects-with-zio%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+
+  <a href="https://plus.google.com/share?url=http%3A%2F%2Flocalhost%3A4000%2Ffunctional-effects-with-zio%2F" class="btn btn--google-plus" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Google Plus"><i class="fab fa-fw fa-google-plus" aria-hidden="true"></i><span> Google+</span></a>
+
+  <a href="https://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2Flocalhost%3A4000%2Ffunctional-effects-with-zio%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+</section>
+
+
+      
+  <nav class="pagination">
+    
+      <a href="http://localhost:4000/a-taste-of-functional-java/" class="pagination--pager" title="A Taste of Functional Java
+">Previous</a>
+    
+    
+      <a href="#" class="pagination--pager disabled">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+  </article>
+
+  
+  
+    <div class="page__related">
+      <h4 class="page__related-title">You May Also Enjoy</h4>
+      <div class="grid__wrapper">
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title" itemprop="headline">
+      
+        <a href="http://localhost:4000/a-taste-of-functional-java/" rel="permalink">A Taste of Functional Java
+</a>
+      
+    </h2>
+    
+      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  19 minute read
+</p>
+    
+    <p class="archive__item-excerpt" itemprop="description">Java, JVM, Functional Programming
+</p>
+  </article>
+</div>
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title" itemprop="headline">
+      
+        <a href="http://localhost:4000/power-of-akka-streams/" rel="permalink">The Power of Akka Streams
+</a>
+      
+    </h2>
+    
+      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  14 minute read
+</p>
+    
+    <p class="archive__item-excerpt" itemprop="description">Scala, Akka, JVM, Akka Streams
+</p>
+  </article>
+</div>
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title" itemprop="headline">
+      
+        <a href="http://localhost:4000/akka-actors-2/" rel="permalink">Data processing with Akka Actors: Part II
+</a>
+      
+    </h2>
+    
+      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  9 minute read
+</p>
+    
+    <p class="archive__item-excerpt" itemprop="description">Scala, Akka, JVM, Big Data
+</p>
+  </article>
+</div>
+        
+          
+
+
+
+<div class="grid__item">
+  <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
+    
+    <h2 class="archive__item-title" itemprop="headline">
+      
+        <a href="http://localhost:4000/akka-actors-1/" rel="permalink">Data processing with Akka Actors: Part I
+</a>
+      
+    </h2>
+    
+      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
+
+
+
+
+  5 minute read
+</p>
+    
+    <p class="archive__item-excerpt" itemprop="description">Scala, Akka, JVM, Big Data
+</p>
+  </article>
+</div>
+        
+      </div>
+    </div>
+  
+  
+</div>
+
+    </div>
+
+    
+
+    <div class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+      <li><strong>Follow:</strong></li>
+    
+    
+    
+    
+      <li><a href="https://github.com/aleksandarskrbic"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+    
+    
+    
+    <li><a href="http://localhost:4000/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+  </ul>
+</div>
+
+<div class="page__footer-copyright">&copy; 2020 Aleksandar Skrbic. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="http://localhost:4000/assets/js/main.min.js"></script>
+  <script src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
+
+
+
+
+
+
+
+
+
+
+  </body>
+</html>

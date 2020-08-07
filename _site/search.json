@@ -1,6 +1,14 @@
 [
   
     {
+      "title"    : "Functional Effects with ZIO",
+      "category" : "",
+      "tags"     : "scala, jvm, zio, fp",
+      "url"      : "/functional-effects-with-zio/",
+      "date"     : "2020-08-07 00:00:00 +0200"
+    } ,
+  
+    {
       "title"    : "A Taste of Functional Java",
       "category" : "",
       "tags"     : "java, jvm, fp",
