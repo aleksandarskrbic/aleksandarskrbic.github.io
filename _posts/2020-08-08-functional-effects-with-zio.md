@@ -1,6 +1,6 @@
 ---
 title: "Functional Effects with ZIO"
-date: 2020-08-07
+date: 2020-08-08
 header:
   image: "/images/zio-header.jpg"
 tags: [scala, jvm, zio, fp]
