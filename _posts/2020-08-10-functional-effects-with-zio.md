@@ -339,3 +339,7 @@ You can find me at:
 * [Github](https://github.com/aleksandarskrbic)
 
 Or just send me a question to [skrbic.alexa@gmail.com]()
+
+## Credits
+
+Thanks to [@nathanknox](https://github.com/nathanknox) for proofreading and all ZIO contributors!
