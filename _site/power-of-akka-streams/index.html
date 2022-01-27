@@ -451,8 +451,8 @@ Since I didn’t explain <em>Source</em> in detail, let’s do that now. <em>Sou
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">source</span><span class="k">:</span> <span class="kt">Source</span><span class="o">[</span><span class="kt">String</span>, <span class="kt">Future</span><span class="o">[</span><span class="kt">IOResult</span><span class="o">]]</span> <span class="k">=</span> <span class="nc">FileIO</span>
   <span class="o">.</span><span class="py">fromPath</span><span class="o">(</span><span class="n">createPath</span><span class="o">)</span>
   <span class="o">.</span><span class="py">via</span><span class="o">(</span><span class="n">lineDelimiter</span><span class="o">)</span>
-  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">byteString</span> <span class="k">=&gt;</span> <span class="nv">byteString</span><span class="o">.</span><span class="py">utf8String</span><span class="o">)</span> <span class="c1">// or .map(_.utf8String)
-</span></code></pre></div></div>
+  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">byteString</span> <span class="k">=&gt;</span> <span class="nv">byteString</span><span class="o">.</span><span class="py">utf8String</span><span class="o">)</span> <span class="c1">// or .map(_.utf8String)</span>
+</code></pre></div></div>
 
 <p>When a source is modified to emit lines, we are ready to implement our processing logic, whom you are already familiar with. Keep every line that starts with valid ip address, extracts status code from it, and count the number of occurrences of status code in a giver file.</p>
 
@@ -473,10 +473,10 @@ Since I didn’t explain <em>Source</em> in detail, let’s do that now. <em>Sou
 <span class="nc">FileIO</span>
   <span class="o">.</span><span class="py">fromPath</span><span class="o">(</span><span class="n">createPath</span><span class="o">)</span>
   <span class="o">.</span><span class="py">via</span><span class="o">(</span><span class="n">lineDelimiter</span><span class="o">)</span>
-  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">byteString</span> <span class="k">=&gt;</span> <span class="nv">byteString</span><span class="o">.</span><span class="py">utf8String</span><span class="o">)</span> <span class="c1">// or .map(_.utf8String)
-</span>  <span class="o">.</span><span class="py">filter</span><span class="o">(</span><span class="n">line</span> <span class="k">=&gt;</span> <span class="nf">validateIp</span><span class="o">(</span><span class="n">line</span><span class="o">))</span>         <span class="c1">// or .filter(validate)
-</span>  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">line</span> <span class="k">=&gt;</span> <span class="nf">extractStatusCode</span><span class="o">(</span><span class="n">line</span><span class="o">))</span>     <span class="c1">// or .map(extractStatusCode)
-</span></code></pre></div></div>
+  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">byteString</span> <span class="k">=&gt;</span> <span class="nv">byteString</span><span class="o">.</span><span class="py">utf8String</span><span class="o">)</span> <span class="c1">// or .map(_.utf8String)</span>
+  <span class="o">.</span><span class="py">filter</span><span class="o">(</span><span class="n">line</span> <span class="k">=&gt;</span> <span class="nf">validateIp</span><span class="o">(</span><span class="n">line</span><span class="o">))</span>         <span class="c1">// or .filter(validate)</span>
+  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">line</span> <span class="k">=&gt;</span> <span class="nf">extractStatusCode</span><span class="o">(</span><span class="n">line</span><span class="o">))</span>     <span class="c1">// or .map(extractStatusCode)</span>
+</code></pre></div></div>
 <p>I hope you are already familiar with these helper methods since they are already implemented in the actor’s version of this application.</p>
 
 <p>Now things can get a little bit complicated, but with a great <em>Akka Streams DSL</em>, it will look quite simple.
@@ -492,12 +492,12 @@ If you are familiar with <a href="https://spark.apache.org/">Apache Spark</a> yo
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">processorResult</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[(</span><span class="kt">String</span>, <span class="kt">Long</span><span class="o">)]]</span> <span class="k">=</span> <span class="nc">FileIO</span>
   <span class="o">.</span><span class="py">fromPath</span><span class="o">(</span><span class="n">createPath</span><span class="o">)</span>
   <span class="o">.</span><span class="py">via</span><span class="o">(</span><span class="n">lineDelimiter</span><span class="o">)</span>
-  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">byteString</span> <span class="k">=&gt;</span> <span class="nv">byteString</span><span class="o">.</span><span class="py">utf8String</span><span class="o">)</span> <span class="c1">// or .map(_.utf8String)
-</span>  <span class="o">.</span><span class="py">filter</span><span class="o">(</span><span class="n">line</span> <span class="k">=&gt;</span> <span class="nf">validateIp</span><span class="o">(</span><span class="n">line</span><span class="o">))</span>         <span class="c1">// or .filter(validate)
-</span>  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">line</span> <span class="k">=&gt;</span> <span class="nf">extractStatusCode</span><span class="o">(</span><span class="n">line</span><span class="o">))</span>     <span class="c1">// or .map(extractStatusCode)
-</span>  <span class="o">.</span><span class="py">groupBy</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="n">identity</span><span class="o">)</span>
-  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">statusCode</span> <span class="k">=&gt;</span> <span class="n">statusCode</span> <span class="o">-&gt;</span> <span class="mi">1L</span><span class="o">)</span>      <span class="c1">// or .map(_ -&gt; 1L)
-</span>  <span class="o">.</span><span class="py">reduce</span><span class="o">((</span><span class="n">left</span><span class="o">,</span> <span class="n">right</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">(</span><span class="nv">left</span><span class="o">.</span><span class="py">_1</span><span class="o">,</span> <span class="nv">left</span><span class="o">.</span><span class="py">_2</span> <span class="o">+</span> <span class="nv">right</span><span class="o">.</span><span class="py">_2</span><span class="o">))</span>
+  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">byteString</span> <span class="k">=&gt;</span> <span class="nv">byteString</span><span class="o">.</span><span class="py">utf8String</span><span class="o">)</span> <span class="c1">// or .map(_.utf8String)</span>
+  <span class="o">.</span><span class="py">filter</span><span class="o">(</span><span class="n">line</span> <span class="k">=&gt;</span> <span class="nf">validateIp</span><span class="o">(</span><span class="n">line</span><span class="o">))</span>         <span class="c1">// or .filter(validate)</span>
+  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">line</span> <span class="k">=&gt;</span> <span class="nf">extractStatusCode</span><span class="o">(</span><span class="n">line</span><span class="o">))</span>     <span class="c1">// or .map(extractStatusCode)</span>
+  <span class="o">.</span><span class="py">groupBy</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="n">identity</span><span class="o">)</span>
+  <span class="o">.</span><span class="py">map</span><span class="o">(</span><span class="n">statusCode</span> <span class="k">=&gt;</span> <span class="n">statusCode</span> <span class="o">-&gt;</span> <span class="mi">1L</span><span class="o">)</span>      <span class="c1">// or .map(_ -&gt; 1L)</span>
+  <span class="o">.</span><span class="py">reduce</span><span class="o">((</span><span class="n">left</span><span class="o">,</span> <span class="n">right</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="o">(</span><span class="nv">left</span><span class="o">.</span><span class="py">_1</span><span class="o">,</span> <span class="nv">left</span><span class="o">.</span><span class="py">_2</span> <span class="o">+</span> <span class="nv">right</span><span class="o">.</span><span class="py">_2</span><span class="o">))</span>
   <span class="o">.</span><span class="py">mergeSubstreams</span>
   <span class="o">.</span><span class="py">runWith</span><span class="o">(</span><span class="nv">Sink</span><span class="o">.</span><span class="py">seq</span><span class="o">[(</span><span class="kt">String</span>, <span class="kt">Long</span><span class="o">)])</span>
 </code></pre></div></div>
@@ -867,7 +867,7 @@ I hope that these two examples were enough to understand what an asynchronous bo
   </ul>
 </div>
 
-<div class="page__footer-copyright">&copy; 2020 Aleksandar Skrbic. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+<div class="page__footer-copyright">&copy; 2022 Aleksandar Skrbic. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
 
       </footer>
     </div>
