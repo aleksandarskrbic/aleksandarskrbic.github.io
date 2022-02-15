@@ -25,18 +25,10 @@
     } ,
   
     {
-      "title"    : "Data processing with Akka Actors: Part II",
+      "title"    : "Parallel processing with Scala and Akka Actors",
       "category" : "",
       "tags"     : "scala, akka, jvm, big data",
-      "url"      : "/akka-actors-2/",
-      "date"     : "2020-04-11 00:00:00 +0200"
-    } ,
-  
-    {
-      "title"    : "Data processing with Akka Actors: Part I",
-      "category" : "",
-      "tags"     : "scala, akka, jvm, big data",
-      "url"      : "/akka-actors-1/",
+      "url"      : "/akka-actors/",
       "date"     : "2020-04-04 00:00:00 +0200"
     } 
   

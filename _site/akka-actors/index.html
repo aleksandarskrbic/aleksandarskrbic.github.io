@@ -9,7 +9,7 @@
   <head>
     <meta charset="utf-8">
 
-<!-- begin _includes/seo.html --><title>Data processing with Akka Actors: Part II - Aleksandar Skrbic</title>
+<!-- begin _includes/seo.html --><title>Parallel processing with Scala and Akka Actors - Aleksandar Skrbic</title>
 <meta name="description" content="Scala, Akka, JVM, Big Data">
 
 
@@ -17,8 +17,8 @@
 <meta property="og:type" content="article">
 <meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Aleksandar Skrbic">
-<meta property="og:title" content="Data processing with Akka Actors: Part II">
-<meta property="og:url" content="http://localhost:4000/akka-actors-2/">
+<meta property="og:title" content="Parallel processing with Scala and Akka Actors">
+<meta property="og:url" content="http://localhost:4000/akka-actors/">
 
 
   <meta property="og:description" content="Scala, Akka, JVM, Big Data">
@@ -31,7 +31,7 @@
 
 
 
-  <meta property="article:published_time" content="2020-04-11T00:00:00+02:00">
+  <meta property="article:published_time" content="2020-04-04T00:00:00+02:00">
 
 
 
@@ -42,7 +42,7 @@
   
 
 
-<link rel="canonical" href="http://localhost:4000/akka-actors-2/">
+<link rel="canonical" href="http://localhost:4000/akka-actors/">
 
 
 
@@ -159,7 +159,7 @@
   style=" "
 >
   
-    <img src="http://localhost:4000/images/akka/akka-h1.jpg" alt="Data processing with Akka Actors: Part II" class="page__hero-image">
+    <img src="http://localhost:4000/images/akka/akka-h1.jpg" alt="Parallel processing with Scala and Akka Actors" class="page__hero-image">
   
   
 </div>
@@ -289,15 +289,15 @@
 
 
   <article class="page" itemscope itemtype="http://schema.org/CreativeWork">
-    <meta itemprop="headline" content="Data processing with Akka Actors: Part II">
+    <meta itemprop="headline" content="Parallel processing with Scala and Akka Actors">
     <meta itemprop="description" content="Scala, Akka, JVM, Big Data">
-    <meta itemprop="datePublished" content="April 11, 2020">
+    <meta itemprop="datePublished" content="April 04, 2020">
     
 
     <div class="page__inner-wrap">
       
         <header>
-          <h1 class="page__title" itemprop="headline">Data processing with Akka Actors: Part II
+          <h1 class="page__title" itemprop="headline">Parallel processing with Scala and Akka Actors
 </h1>
           
             <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
@@ -305,7 +305,7 @@
 
 
 
-  9 minute read
+  13 minute read
 </p>
           
         </header>
@@ -314,9 +314,148 @@
       <section class="page__content" itemprop="text">
         
         
-<p>In the <a href="/akka-actors-1/">first article</a> in the <em>Data processing with Akka Actors series</em>, I have introduced a problem that we are trying to solve. There was some talk about actors and how to organize them into an actor hierarchy. Then we got deep into details while implementing two simple actors with Scala describing message flow protocol between them and explaining the relationships among actors in the defined actor hierarchy.</p>
+<p>Everyone experienced in distributed, and data-intensive systems or big data technologies must have heard about <a href="https://akka.io/">Akka</a>.
+This article will introduce you to the actor programming model while developing a data processing application exploiting techniques provided by <em>Akka Actors library</em> to build concurrent and parallel systems. This series will skip <em>” Scala and Akka Basics”</em> parts because official documentation is excellent, and you can create a good foundation of Akka by reading it.  This series aims to provide a hands-on introduction to the Akka toolkit.</p>
 
-<p><em>Supervisor Actor</em> and <em>Ingestion Actor</em> are already implemented and discussed in detail and if you remember the actor hierarchy diagram from the <a href="/akka-actors-1/">first article</a> you know that we are going to implement two more actors: <em>Master Actor</em> and <em>Worker Actor</em>. Since Master Actor is the brain of our application and most complex among all actors, who is responsible for distributing incoming requests to workers and gathering results from them when data processing is finished, we will first implement Worker Actor.</p>
+<p>So, let’s talk about the implementation details. As you guessed, we will use Scala with Akka, which also has full support for Java.
+We will develop an application to read logs from the file system and count the number of occurrences of HTTP status codes in a given file. All data processing tasks will be executed in parallel.
+In the actor programming model, the base unit is an actor, and actors asynchronously communicate by sending and receiving messages.</p>
+
+<p>Since our application will be actor-based, let’s look at the actor hierarchy.</p>
+
+<p><img src="http://localhost:4000/images/akka/actor-hierarchy.jpg" /></p>
+
+<p>You can see four actor types, <em>Supervisor, Ingestion, Master, and Worker</em>. Names are more or less self-explanatory, but let’s make things clear. Good practice in actor-based programming is to organize actors in a tree-like structure. So the root actor in our application will be
+<em>Supervisor Actor</em> who will be an entry point in our system.</p>
+
+<ul>
+  <li><em>Supervisor Actor</em> is responsible for spawning and managing <em>Ingestion Actor</em>.</li>
+  <li><em>Ingestion Actor</em>  will be the parent of <em>Master Actor</em>.</li>
+  <li>Also, you can notice that we will have multiple <em>Worker Actors</em>, who will do all the heavy lifting, but <em>Master Actor</em> is responsible for their coordination.</li>
+</ul>
+
+<p>To give you more details about the problem we will solve using Akka, let me walk you through the whole data processing flow.</p>
+<ul>
+  <li>Dataset of weblogs that we will process can be downloaded from <a href="https://www.kaggle.com/shawon10/web-log-dataset">kaggle</a>.</li>
+  <li>It’s a CSV file containing <em>IP, Time, URL, Status</em> on every line, but not every line is in a valid form, so we will have to deal with that.</li>
+  <li>When <em>Ingestion Actor</em> is initialized, it will try to initialize <em>Master Actor</em>, who will spawn an arbitrary number of <em>Worker Actors</em>. After workers are initialized, <em>Master Actor</em> will notify <em>Ingestion Actor</em> that it’s ready to start processing.</li>
+  <li><em>Ingestion Actor</em> will start reading from a given file line by line, filter only valid ones, and pass it to <em>Master Actor</em>.</li>
+  <li><em>Master Actor</em> will distribute incoming requests from <em>Ingestion Actor</em> to <em>Worker</em> actors in a round-robin fashion.</li>
+</ul>
+
+<p>Finally, let’s review some code.</p>
+
+<h2 id="applcation-entry-point">Applcation entry point</h2>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Application</span> <span class="k">extends</span> <span class="nc">App</span> <span class="o">{</span>
+
+  <span class="k">implicit</span> <span class="k">val</span> <span class="nv">system</span> <span class="k">=</span> <span class="nc">ActorSystem</span><span class="o">(</span><span class="s">"actor-system"</span><span class="o">)</span>
+
+  <span class="k">val</span> <span class="nv">supervisor</span> <span class="k">=</span> <span class="nv">system</span><span class="o">.</span><span class="py">actorOf</span><span class="o">(</span>
+    <span class="nv">Supervisor</span><span class="o">.</span><span class="py">props</span><span class="o">(</span><span class="s">"input"</span><span class="o">,</span> <span class="s">"output"</span><span class="o">,</span> <span class="mi">3</span><span class="o">),</span> <span class="s">"supervisor"</span>
+  <span class="o">)</span>
+  <span class="n">supervisor</span> <span class="o">!</span> <span class="nv">Supervisor</span><span class="o">.</span><span class="py">Start</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="supervisor-actor">Supervisor Actor</h2>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Supervisor</span> <span class="o">{</span>
+  <span class="k">final</span> <span class="k">object</span> <span class="nc">Start</span>
+  <span class="k">final</span> <span class="k">object</span> <span class="nc">Stop</span>
+
+  <span class="k">def</span> <span class="nf">props</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">output</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">parallelism</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span>
+    <span class="nc">Props</span><span class="o">(</span><span class="k">new</span> <span class="nc">Supervisor</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="n">output</span><span class="o">,</span> <span class="n">parallelism</span><span class="o">))</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>In a <em>Supervisor Actor companion object</em>, all messages and methods for creating an actor are defined. This pattern should be applied to every actor.</p>
+
+<p>Here is <em>Supervisor Actor</em> implementation:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Supervisor</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span><span class="n">output</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">parallelism</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span>
+  <span class="k">extends</span> <span class="nc">Actor</span>
+  <span class="k">with</span> <span class="nc">ActorLogging</span> <span class="o">{</span>
+  <span class="k">import</span> <span class="nn">Supervisor._</span>
+
+  <span class="k">val</span> <span class="nv">ingestion</span><span class="k">:</span> <span class="kt">ActorRef</span> <span class="o">=</span> <span class="nf">createIngestionActor</span><span class="o">()</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="nf">receive</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="nc">Start</span> <span class="k">=&gt;</span>
+      <span class="n">ingestion</span> <span class="o">!</span> <span class="nv">Ingestion</span><span class="o">.</span><span class="py">StartIngestion</span>
+    <span class="k">case</span> <span class="n">aggregate</span> <span class="k">@</span> <span class="nv">Master</span><span class="o">.</span><span class="py">Aggregate</span><span class="o">(</span><span class="k">_</span><span class="o">)</span> <span class="k">=&gt;</span>
+      <span class="nv">aggregate</span><span class="o">.</span><span class="py">result</span><span class="o">.</span><span class="py">foreach</span><span class="o">(</span><span class="n">println</span><span class="o">)</span>
+    <span class="k">case</span> <span class="nc">Stop</span> <span class="k">=&gt;</span>
+      <span class="nv">context</span><span class="o">.</span><span class="py">system</span><span class="o">.</span><span class="py">terminate</span><span class="o">()</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The Supervisor Actor is simple. He is responsible for starting the whole data processing pipeline,  printing results to the console upon receiving it, and stopping the actor system. For the sake of simplicity, I choose to print the results, but in a real scenario, it could be something like writing results to some database, message queue, or filesystem. Also, shutting down the actor system upon finishing all tasks is very important since it is a heavyweight structure that, upon initialization, allocates threads, and to release them, you need to stop the actor system.</p>
+
+<h2 id="ingestion-actor">Ingestion Actor</h2>
+
+<p><em>Ingestion Actor</em> is responsible for reading a file from a given path, processing it, and passing it to a <em>Master Actor</em>. When the whole file is read, it will notify <em>Master Actor</em> that ingestion is done.</p>
+
+<p><em>Ingestion Actor companion object</em> implementation:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Ingestion</span> <span class="o">{</span>
+  <span class="k">final</span> <span class="k">object</span> <span class="nc">StartIngestion</span>
+  <span class="k">final</span> <span class="k">object</span> <span class="nc">StopIngestion</span>
+  <span class="k">final</span> <span class="k">case</span> <span class="k">class</span> <span class="nc">Line</span><span class="o">(</span><span class="n">text</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
+
+  <span class="k">def</span> <span class="nf">props</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">output</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">nWorkers</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span>
+    <span class="nc">Props</span><span class="o">(</span><span class="k">new</span> <span class="nc">Ingestion</span><span class="o">(</span><span class="n">input</span><span class="o">,</span> <span class="n">output</span><span class="o">,</span> <span class="n">nWorkers</span><span class="o">))</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>I prefer to implement another trait for actors with some additional functionalities, where business logic is concentrated and will be mixed with the actor. This makes the actor class clean and straightforward because we are only dealing with its behavior. Actor behavior is a way of message processing.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">IngestionHandler</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="nv">ip</span><span class="k">:</span> <span class="kt">Regex</span> <span class="o">=</span> <span class="s">""".*?(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3}).*"""</span><span class="o">.</span><span class="py">r</span>
+  <span class="k">val</span> <span class="nv">validIp</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=&gt;</span> <span class="nc">Boolean</span> <span class="k">=</span> <span class="n">line</span> <span class="k">=&gt;</span> <span class="nv">ip</span><span class="o">.</span><span class="py">matches</span><span class="o">(</span><span class="nv">line</span><span class="o">.</span><span class="py">split</span><span class="o">(</span><span class="s">","</span><span class="o">)(</span><span class="mi">0</span><span class="o">))</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Here we have a simple function to validate if the line starts with an IP address or not since we need only those lines that do.</p>
+
+<p><em>Ingestion Actor</em> implementation:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Ingestion</span><span class="o">(</span><span class="n">input</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">output</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">nWorkers</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span>
+  <span class="k">extends</span> <span class="nc">Actor</span> 
+  <span class="k">with</span> <span class="nc">ActorLogging</span>
+  <span class="k">with</span> <span class="nc">IngestionHandler</span> <span class="o">{</span>
+  <span class="k">import</span> <span class="nn">Ingestion._</span>
+
+  <span class="k">val</span> <span class="nv">master</span><span class="k">:</span> <span class="kt">ActorRef</span> <span class="o">=</span> <span class="nf">createMasterActor</span><span class="o">()</span>
+  <span class="k">lazy</span> <span class="k">val</span> <span class="nv">source</span> <span class="k">=</span> <span class="nv">Source</span><span class="o">.</span><span class="py">fromFile</span><span class="o">(</span><span class="nf">createFile</span><span class="o">())</span>
+
+  <span class="k">override</span> <span class="k">def</span> <span class="nf">receive</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="nc">StartIngestion</span> <span class="k">=&gt;</span>
+      <span class="nv">log</span><span class="o">.</span><span class="py">info</span><span class="o">(</span><span class="s">"Initializing Master Actor..."</span><span class="o">)</span>
+      <span class="n">master</span> <span class="o">!</span> <span class="nv">Master</span><span class="o">.</span><span class="py">Initialize</span>
+    <span class="k">case</span> <span class="nv">Master</span><span class="o">.</span><span class="py">MasterInitialized</span> <span class="k">=&gt;</span>
+      <span class="nv">log</span><span class="o">.</span><span class="py">info</span><span class="o">(</span><span class="s">"Starting ingestion..."</span><span class="o">)</span>
+      <span class="nv">source</span><span class="o">.</span><span class="py">getLines</span><span class="o">().</span><span class="py">filter</span><span class="o">(</span><span class="n">validIp</span><span class="o">).</span><span class="py">map</span><span class="o">(</span><span class="nc">Line</span><span class="o">).</span><span class="py">foreach</span><span class="o">(</span><span class="n">master</span> <span class="o">!</span> <span class="k">_</span><span class="o">)</span>
+      <span class="nv">log</span><span class="o">.</span><span class="py">info</span><span class="o">(</span><span class="s">"Collecting results..."</span><span class="o">)</span>
+      <span class="n">master</span> <span class="o">!</span> <span class="nv">Master</span><span class="o">.</span><span class="py">CollectResults</span>
+    <span class="k">case</span> <span class="n">aggregate</span> <span class="k">@</span> <span class="nv">Master</span><span class="o">.</span><span class="py">Aggregate</span><span class="o">(</span><span class="k">_</span><span class="o">)</span> <span class="k">=&gt;</span>
+      <span class="nv">context</span><span class="o">.</span><span class="py">parent</span><span class="o">.</span><span class="py">forward</span><span class="o">(</span><span class="n">aggregate</span><span class="o">)</span>
+      <span class="n">self</span> <span class="o">!</span> <span class="nc">StopIngestion</span>
+    <span class="k">case</span> <span class="nc">StopIngestion</span> <span class="k">=&gt;</span>
+      <span class="nv">source</span><span class="o">.</span><span class="py">close</span><span class="o">()</span>
+      <span class="nv">context</span><span class="o">.</span><span class="py">parent</span> <span class="o">!</span> <span class="nv">Supervisor</span><span class="o">.</span><span class="py">Stop</span>
+  <span class="o">}</span>
+</code></pre></div></div>
+
+<p>Upon initialization, <em>Master Actor</em> is spawned, and the data source is ready. When <strong>MasterInitialized</strong> message is received, <em>Ingestion Actor</em> starts to read file line by line, filter only the valid ones, map them into <strong>Line</strong> case class, and pass it to <em>Master Actor</em>. After the whole file is read,
+<em>Ingestion Actor</em> demands results from  <em>Master Actor</em>. Note that all communication is fully asynchronous. Received results will be forwarded to the parent actor (<em>Supervisor Actor</em>). After that, the file stream is closed, and the parent is notified about that with the message <strong>Stop</strong>.</p>
+
+<h2 id="actors-deep-dive">Actors Deep Dive</h2>
+
+<p>Until now, we learned how to implement simple actors with Scala describing message flow protocol between them and explaining the relationships among actors in the defined actor hierarchy.</p>
+
+<p>The next step is to implement two more actors: <em>Master Actor</em> and <em>Worker Actor</em>. Since <em>Master Actor</em> is the brain of our application and most complex among all actors, because it is responsible for distributing incoming requests to workers and gathering results from them when data processing is finished, we will first implement Worker Actor.</p>
 
 <h2 id="worker-actor">Worker Actor</h2>
 
@@ -330,16 +469,16 @@
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Here is some already familiar pattern where the first is implemented actors companion object, where message protocol is defined and also factory method that returns actor wrapped in a Props class which is immutable configuration object used for creating new actors through <em>actors system</em> or <em>actor context</em>.  If something is not clear in the previous sentence I recommend reading <a href="https://doc.akka.io/docs/akka/current/actors.html">this page</a> of Akka official documentation.</p>
+<p>Here is some familiar pattern where the first is implemented actors companion object, where message protocol is defined and a factory method that returns actor wrapped in a Props class which is immutable configuration object used for creating new actors through <em>actors system</em> or <em>actor context</em>.  If something is not clear in the previous sentence, I recommend reading <a href="https://doc.akka.io/docs/akka/current/actors.html">this page</a> of Akka official documentation.</p>
 
 <p>Now let’s talk about the message protocol. There are four defined messages:</p>
 <ul>
-  <li><strong>ResultRequest</strong>  is a message that is received by <em>Master Actor</em>, when there is no data left to process, which means, as a name suggests, that worker actor should return aggregated processing results to <em>Master Actor</em>.</li>
+  <li><strong>ResultRequest</strong>  is a message received by <em>Master Actor</em>, when there is no data left to process, which means, as a name suggests, that worker actor should return aggregated processing results to <em>Master Actor</em>.</li>
   <li><strong>ResultResponse</strong>  is, as you assumed,  a message that contains all data processed by a worker.</li>
-  <li><strong>Date</strong> and <strong>Log</strong> case classes are our domain objects which are constructed from <strong>Line</strong> message received by <em>Master Actor</em>.</li>
+  <li><strong>Date</strong> and <strong>Log</strong> case classes are our domain objects constructed from <strong>Line</strong> message received by <em>Master Actor</em>.</li>
 </ul>
 
-<p>By now, as we are already familiar with a message flow through actors, we know that <strong>Line</strong> is just a wrapper class around line read from source by <em>Ingestion Actor</em> sent to <em>Master Actor</em> and finally forwarded to one of the <em>Worker Actors</em>. The goal of our application is to count the number of occurrences of HTTP status codes from file reading it line by line. So upon receiving <strong>Line</strong>,  <em>Worker Actor</em> should transform that to  <strong>Log</strong> case class. So here is an implementation of that function:</p>
+<p>As we are already familiar with a message flow through actors, we know that <strong>Line</strong> is just a wrapper class around line read from source by <em>Ingestion Actor</em> sent to <em>Master Actor</em> and finally forwarded to one of the <em>Worker Actors</em>. The goal of our application is to count the number of occurrences of HTTP status codes from file reading it line by line. So upon receiving <strong>Line</strong>,  <em>Worker Actor</em> should transform that to  <strong>Log</strong> case class. So here is an implementation of that function:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">WorkerHandler</span> <span class="o">{</span>
   <span class="k">import</span> <span class="nn">Worker._</span>
@@ -357,7 +496,7 @@
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>This implementation relies heavily on pattern matching because I like the way it allows us to deconstruct case classes and collections. If you want to found out more about pattern matching in Scala or you are not very clear about it, feel free to reach me or read <a href="https://docs.scala-lang.org/tour/pattern-matching.html">this</a>.</p>
+<p>This implementation relies heavily on pattern matching because it allows us to deconstruct case classes and collections. If you want to find out more about pattern matching in Scala or you are not very clear about it, feel free to reach me or read <a href="https://docs.scala-lang.org/tour/pattern-matching.html">this</a>.</p>
 
 <p>Finally, let’s review <em>Worker Actor</em> implementation:</p>
 
@@ -386,14 +525,14 @@
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>There are only a few lines of code, but to be sure let’s examine all details.</p>
+<p>There are only a few lines of code, but to be sure, let’s examine all details.</p>
 
-<p>Starting from the beginning we could see <strong>state</strong> variable where processing results are stored.</p>
+<p>Starting from the beginning, we could see the <strong>state</strong> variable where processing results are stored.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="n">state</span><span class="k">:</span> <span class="kt">Map</span><span class="o">[</span><span class="kt">StatusCode</span>, <span class="kt">Count</span><span class="o">]</span> <span class="k">=</span> <span class="nv">Map</span><span class="o">.</span><span class="py">empty</span>
 </code></pre></div></div>
 
-<p>Upon receiving <strong>Line</strong> message, <em>Worker Actor</em> transform it to <strong>Log</strong> and then update state with next logic:</p>
+<p>Upon receiving the <strong>Line</strong> message, <em>Worker Actor</em> transform it to <strong>Log</strong> and then update the state with the next logic:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">state</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="n">status</span><span class="o">)</span> <span class="k">match</span> <span class="o">{</span>
   <span class="k">case</span> <span class="nc">Some</span><span class="o">(</span><span class="n">count</span><span class="o">)</span> <span class="k">=&gt;</span>
@@ -404,10 +543,10 @@
 </code></pre></div></div>
 
 <p>Here we have some pattern matching again.
-Since <em>Map</em> from Scala Collections returns <em>Option[T]</em>, we are able to pattern match against it. If there is some value we will get <em>Some(value)</em> and if value the is absent we will get <em>None</em>. To learn more about <em>Option type</em> check <a href="https://www.scala-lang.org/api/current/scala/Option.html">this</a>.</p>
+Since <em>Map</em> from Scala Collections returns <em>Option[T]</em>, we can pattern match against it. If there is some value, we will get <em>Some(value)</em>, and if the value is absent, we will get <em>None</em>. To learn more about <em>Option type</em> check <a href="https://www.scala-lang.org/api/current/scala/Option.html">this</a>.</p>
 
 <p>And that is a full implementation of a <em>Worker Actors</em>, simple as that.
-But to improve our actor design, let’s remove the state variable, and just pass it through behavior, like this:</p>
+But to improve our actor design, let’s remove the state variable and pass it through behavior, like this:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">override</span> <span class="k">def</span> <span class="nf">receive</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="nf">process</span><span class="o">(</span><span class="nv">Map</span><span class="o">.</span><span class="py">empty</span><span class="o">)</span>
 
@@ -428,11 +567,11 @@ But to improve our actor design, let’s remove the state variable, and just pas
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>The result of removing mutable state is an even cleaner and simpler actor.</p>
+<p>The result of removing a mutable state is an even cleaner and simpler actor.</p>
 
 <h2 id="master-actor">Master Actor</h2>
 
-<p>This is the last chapter of this article where <em>Master Actor</em> implementation is going to be reviewed.</p>
+<p>This is the last chapter of this article where <em>Master Actor</em> implementation will be reviewed.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">Master</span> <span class="o">{</span>
   <span class="k">final</span> <span class="k">object</span> <span class="nc">Initialize</span>
@@ -455,7 +594,7 @@ But to improve our actor design, let’s remove the state variable, and just pas
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p><em>Initialize</em> message that is received from <em>Ingestion Actor</em> will trigger the creation of <em>Worker Actors</em>. A number of workers are defined upon creating <em>Master Actor</em>. Here is the implementation of <em>createWorker</em> method:</p>
+<p><em>Initialize</em> message received from <em>Ingestion Actor</em> will trigger the creation of <em>Worker Actors</em>. A number of workers are defined upon creating <em>Master Actor</em>. Here is the implementation of <em>createWorker</em> method:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">createWorker</span><span class="o">(</span><span class="n">index</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">ActorRef</span> <span class="o">=</span> 
   <span class="nv">context</span><span class="o">.</span><span class="py">actorOf</span><span class="o">(</span><span class="nv">Worker</span><span class="o">.</span><span class="py">props</span><span class="o">(</span><span class="n">index</span><span class="o">),</span> <span class="n">s</span><span class="s">"worker-$index"</span><span class="o">)</span>
@@ -466,12 +605,12 @@ But to improve our actor design, let’s remove the state variable, and just pas
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">forwardTask</span><span class="o">(</span><span class="n">workers</span><span class="o">,</span> <span class="mi">0</span><span class="o">))</span>
 </code></pre></div></div>
 
-<p>This code snippet(above) basically tells actors how to react to the next message.
+<p>This code snippet(above) tells actors how to react to the following message.
 Actor’s <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]</em> that implements the new message handler.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">type</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="nc">PartialFunction</span><span class="o">[</span><span class="kt">Any</span>, <span class="kt">Unit</span><span class="o">]</span>
 </code></pre></div></div>
-<p><em>Receive</em> type that is seen in code is just Akka alias for <em>PartialFunction[Any, Unit]</em>.</p>
+<p><em>Receive</em> type seen in code is Akka alias for <em>PartialFunction[Any, Unit]</em>.</p>
 
 <p>Now, after this is clear, let’s review <em>forwadTask</em> behavior:</p>
 
@@ -487,17 +626,18 @@ Actor’s <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]<
     <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">collectResults</span><span class="o">())</span>
 <span class="o">}</span>
 </code></pre></div></div>
-<p>In this behavior <em>Master Actor</em> react on two types of messages: <em>Line</em> and <em>CollectResults</em>.</p>
 
-<p>When <em>Line</em> is received, we will have access to <em>workers</em> which is collection of all <em>Worker Actors</em> and <em>currentWorker</em>  which is the index of <em>Worker Actor</em> to whom the incoming message will be passed. After the message is sent to the wanted worker, we need to determine the index of the next <em>Worker Actor</em> who will need to receive the next message.</p>
+<p><em>Master Actor</em> reacts to the two types of messages in this behavior: <em>Line</em> and <em>CollectResults</em>.</p>
+
+<p>When <em>Line</em> is received, we will have access to <em>workers</em>, a collection of all <em>Worker Actors</em> and <em>currentWorker</em>, which is the index of <em>Worker Actor</em> to whom the incoming message will be passed. After the message is sent to the wanted worker, we need to determine the index of the next <em>Worker Actor</em> who will need to receive the following message.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">nextWorker</span> <span class="k">=</span> <span class="o">(</span><span class="n">currentWorker</span> <span class="o">+</span> <span class="mi">1</span><span class="o">)</span> <span class="o">%</span> <span class="nv">workers</span><span class="o">.</span><span class="py">length</span>
 <span class="nv">context</span><span class="o">.</span><span class="py">become</span><span class="o">(</span><span class="nf">forwardTask</span><span class="o">(</span><span class="n">workers</span><span class="o">,</span> <span class="n">nextWorker</span><span class="o">))</span>
 </code></pre></div></div>
 
-<p>In the first line of code <em>nextWorker</em> index is determined in a round-robin fashion, and the next line is the same as one we explained before. You can capture the pattern that we are using to carry the state via method arguments.</p>
+<p>The first line of code <em>nextWorker</em> index is determined in a round-robin fashion, and the following line is the same as the one we explained before. You can capture the pattern we are using to carry the state via method arguments.</p>
 
-<p>When <em>CollectResults</em> message is received, we just iterate over <em>workers</em> and request results from them, after that <em>Master Actor</em> behavior is switched to <em>collectResults</em>, when it’s ready to handle responses from all <em>workers</em>.</p>
+<p>When the <em>CollectResults</em> message is received, we iterate over <em>workers</em> and request results from them. After that, <em>Master Actor</em> behavior is switched to <em>collectResults</em>, when it’s ready to handle responses from all <em>workers</em>.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">results</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ArrayBuffer</span><span class="o">[</span><span class="kt">Worker.ResultResponse</span><span class="o">]()</span>
 
@@ -510,7 +650,7 @@ Actor’s <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]<
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Here you can see that we introduced <em>results</em> which is a collection of all received messages from workers. When all results are collected from workers, we will transform responses to the final result and pass it to the parent(<em>Ingestion Actor</em>), but it’s better to pass this <em>results</em> via behavior, like we did it in <em>Worker Actor</em>.  The first step is to change how <em>forwardTask</em> handles <em>CollectResults</em>:</p>
+<p>Here, we introduced <em>results</em>, which collects all received messages from workers. When all results are collected from workers, we will transform responses to the final result and pass it to the parent(<em>Ingestion Actor</em>), but it’s better to pass these <em>results</em> via behavior like we did it in <em>Worker Actor</em>.  The first step is to change how <em>forwardTask</em> handles <em>CollectResults</em>:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">case</span> <span class="nc">CollectResults</span> <span class="k">=&gt;</span> <span class="o">{</span>
   <span class="nv">workers</span><span class="o">.</span><span class="py">foreach</span><span class="o">(</span><span class="k">_</span> <span class="o">!</span> <span class="nv">Worker</span><span class="o">.</span><span class="py">ResultRequest</span><span class="o">)</span>
@@ -518,7 +658,7 @@ Actor’s <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]<
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>Finally, we need to do some modifications to “collectResults” behavior.</p>
+<p>Finally, we need to modify the “collectResults” behavior.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">collectResults</span><span class="o">(</span><span class="n">agg</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">ResultResponse</span><span class="o">])</span><span class="k">:</span> <span class="kt">Receive</span> <span class="o">=</span> <span class="o">{</span>
   <span class="k">case</span> <span class="n">res</span> <span class="k">@</span> <span class="nc">ResultResponse</span><span class="o">(</span><span class="k">_</span><span class="o">,</span> <span class="k">_</span><span class="o">)</span> <span class="k">if</span> <span class="nv">agg</span><span class="o">.</span><span class="py">length</span> <span class="o">==</span> <span class="o">(</span><span class="n">nWorkers</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="k">=&gt;</span>
@@ -528,7 +668,7 @@ Actor’s <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]<
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>I first introduced variables, because for most people at first, it’s hard to pass the state via behavior. It will take some time till you get used to it, I also had a problem to fully understand this pattern.</p>
+<p>I first introduced variables because it’s hard to pass the state via behavior for most people at first. It will take some time till you get used to it. I also had a problem fully understand this pattern.</p>
 
 <p>Let’s review the rest of the <em>Master Actors</em> code:</p>
 
@@ -546,7 +686,7 @@ Actor’s <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]<
 <span class="o">}</span>
 </code></pre></div></div>
 
-<p>In <em>MasterHandler</em> there is a method that transforms results to <em>Aggregate</em> case class, which is just a container for a collection of <em>Tuple(String, Long)</em>, where the first element of a tuple is a <em>status code</em>, and the second one is a <em>count of occurrences</em>.</p>
+<p>In <em>MasterHandler</em>, a method transforms results to <em>Aggregate</em> case class, which is just a container for a collection of <em>Tuple(String, Long)</em>, where the first element of a tuple is a <em>status code</em>. The second one is a <em>count of occurrences</em>.</p>
 
 <p>And finally, we finished our application. Let’s review the whole code for <em>Master Actor</em>:</p>
 
@@ -589,10 +729,10 @@ Actor’s <em>context.become</em> method takes a <em>PartialFunction[Any, Unit]<
 
 <h2 id="summary">Summary</h2>
 
-<p>This is the last part of <em>Data processing with Akka Actors</em> series. Here is the source code if you want to play with it or even improve it.
-Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog/tree/master/actors">Data processing with Akka Actors</a>.</p>
+<p>You learned how to write a relatively simple application with Akka, design master-worker architecture, and implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor the codebase to use Typed Actors and implement supervision strategies. Check official Akka documentation on <a href="https://doc.akka.io/docs/akka/2.6/general/supervision.html">Supervision and Monitoring</a> to learn more about it. Another way to improve this application will be to remove <em>Master Actor completely</em> and to use <a href="https://doc.akka.io/docs/akka/current/routing.html">Akka Routers</a>, which can quickly help us to distribute requests among workers without worrying about the implementation of algorithms like round-robin or some else, as we did here for learning.</p>
 
-<p>You learned how to write a relatively simple application with Akka, how to design master-worker architecture, and how to implement a few communication patterns between actors. There is a lot of improvements that can be added to this application. Some of them are to refactor codebase to use Typed Actors and to implement supervision strategy for actors. Check official Akka documentation on <a href="https://doc.akka.io/docs/akka/2.6/general/supervision.html">Supervision and Monitoring</a> to learn more about it. Another way to improve this application will be to completely remove <em>Master Actor</em> and to use <a href="https://doc.akka.io/docs/akka/current/routing.html">Akka Routers</a>, that can easily help us to distribute request among workers without worrying about the implementation of algorithms like round-robin or some else, as we did here for the purpose of learning.</p>
+<p>Here is the source code if you want to play with it or even improve it.
+Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog/tree/master/actors">Data processing with Akka Actors</a>.</p>
 
 <p>Some of these improvements will be a theme for another article.</p>
 
@@ -602,7 +742,7 @@ Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog
   <li><a href="https://github.com/aleksandarskrbic">Github</a></li>
 </ul>
 
-<p>Or just send me a question to <a href="">skrbic.alexa@gmail.com</a></p>
+<p>Or send me a question to <a href="skrbic.alexa@gmail.com">skrbic.alexa@gmail.com</a></p>
 
         
       </section>
@@ -644,7 +784,7 @@ Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog
 
 
         
-          <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-04-11T00:00:00+02:00">April 11, 2020</time></p>
+          <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-04-04T00:00:00+02:00">April 04, 2020</time></p>
         
       </footer>
 
@@ -653,21 +793,20 @@ Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog
     <h4 class="page__share-title">Share on</h4>
   
 
-  <a href="https://twitter.com/intent/tweet?text=Data+processing+with+Akka+Actors%3A+Part+II%20http%3A%2F%2Flocalhost%3A4000%2Fakka-actors-2%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+  <a href="https://twitter.com/intent/tweet?text=Parallel+processing+with+Scala+and+Akka+Actors%20http%3A%2F%2Flocalhost%3A4000%2Fakka-actors%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
 
-  <a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A4000%2Fakka-actors-2%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+  <a href="https://www.facebook.com/sharer/sharer.php?u=http%3A%2F%2Flocalhost%3A4000%2Fakka-actors%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
 
-  <a href="https://plus.google.com/share?url=http%3A%2F%2Flocalhost%3A4000%2Fakka-actors-2%2F" class="btn btn--google-plus" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Google Plus"><i class="fab fa-fw fa-google-plus" aria-hidden="true"></i><span> Google+</span></a>
+  <a href="https://plus.google.com/share?url=http%3A%2F%2Flocalhost%3A4000%2Fakka-actors%2F" class="btn btn--google-plus" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Google Plus"><i class="fab fa-fw fa-google-plus" aria-hidden="true"></i><span> Google+</span></a>
 
-  <a href="https://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2Flocalhost%3A4000%2Fakka-actors-2%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+  <a href="https://www.linkedin.com/shareArticle?mini=true&url=http%3A%2F%2Flocalhost%3A4000%2Fakka-actors%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 </section>
 
 
       
   <nav class="pagination">
     
-      <a href="http://localhost:4000/akka-actors-1/" class="pagination--pager" title="Data processing with Akka Actors: Part I
-">Previous</a>
+      <a href="#" class="pagination--pager disabled">Previous</a>
     
     
       <a href="http://localhost:4000/power-of-akka-streams/" class="pagination--pager" title="The Power of Akka Streams
@@ -767,33 +906,6 @@ Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog
   </article>
 </div>
         
-          
-
-
-
-<div class="grid__item">
-  <article class="archive__item" itemscope itemtype="http://schema.org/CreativeWork">
-    
-    <h2 class="archive__item-title" itemprop="headline">
-      
-        <a href="http://localhost:4000/akka-actors-1/" rel="permalink">Data processing with Akka Actors: Part I
-</a>
-      
-    </h2>
-    
-      <p class="page__meta"><i class="far fa-clock" aria-hidden="true"></i> 
-
-
-
-
-  5 minute read
-</p>
-    
-    <p class="archive__item-excerpt" itemprop="description">Scala, Akka, JVM, Big Data
-</p>
-  </article>
-</div>
-        
       </div>
     </div>
   
@@ -840,6 +952,10 @@ Github repository: <a href="https://github.com/aleksandarskrbic/akka-actors-blog
 
 
 
+
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
 
 
 
